@@ -1,8 +1,13 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const ARTEMI_EMAIL = "artemios@mesabasketballtraining.com";
-const FROM_EMAIL = "Mesa Basketball <noreply@mesabasketballtraining.com>";
+const FROM_EMAIL = "Mesa Basketball <onboarding@resend.dev>";
+
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("RESEND_API_KEY is not configured");
+  return new Resend(key);
+}
 
 export async function sendRegistrationNotification(data: {
   parentName: string;
@@ -13,6 +18,8 @@ export async function sendRegistrationNotification(data: {
   sessionDetails: string;
   totalParticipants: number;
 }) {
+  const resend = getResend();
+
   const typeLabel =
     data.type === "camp"
       ? "Camp Registration"
