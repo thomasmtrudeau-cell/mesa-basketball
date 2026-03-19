@@ -643,7 +643,13 @@ export default function Home() {
                 >
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <h3 className="font-semibold text-brown-200">{window.date}</h3>
+                      <h3 className="font-semibold text-brown-200">
+                        {(() => {
+                          const d = new Date(window.date);
+                          const day = d.toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
+                          return `${day}, ${window.date}`;
+                        })()}
+                      </h3>
                       <p className="text-sm text-brown-500">
                         {window.location} &bull; Available {window.startLabel} - {window.endLabel} ({totalAvailable} min)
                       </p>
