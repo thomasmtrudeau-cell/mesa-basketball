@@ -72,6 +72,10 @@ interface BookingModal {
   type: BookingType;
   sessionIndex: number;
   sessionDetails: string;
+  bookedDate?: string;
+  bookedStartTime?: string;
+  bookedEndTime?: string;
+  bookedLocation?: string;
 }
 
 // Group weekly sessions by group name
@@ -169,6 +173,9 @@ export default function Home() {
   const [schedule, setSchedule] = useState<WeeklySession[]>([]);
   const [camps, setCamps] = useState<Camp[]>([]);
   const [privateSlots, setPrivateSlots] = useState<PrivateSlot[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<
+    { date: string; startTime: string; endTime: string; location: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -206,13 +213,62 @@ export default function Home() {
           setSchedule(data.weeklySchedule || []);
           setCamps(data.camps || []);
           setPrivateSlots(data.privateSlots || []);
+          setBookedSlots(data.bookedSlots || []);
         }
       })
       .catch(() => setError("Failed to load schedule"))
       .finally(() => setLoading(false));
   }, []);
 
-  const timeWindows = useMemo(() => buildTimeWindows(privateSlots), [privateSlots]);
+  const timeWindows = useMemo(() => {
+    const windows = buildTimeWindows(privateSlots);
+    // Subtract booked time ranges from windows
+    if (bookedSlots.length === 0) return windows;
+
+    const result: TimeWindow[] = [];
+    for (const w of windows) {
+      // Find bookings that overlap this window
+      const overlaps = bookedSlots.filter(
+        (b) => b.date === w.date && b.location === w.location
+      );
+      if (overlaps.length === 0) {
+        result.push(w);
+        continue;
+      }
+
+      // Sort bookings by start time
+      const sorted = overlaps
+        .map((b) => ({ start: parseTime(b.startTime), end: parseTime(b.endTime) }))
+        .sort((a, b) => a.start - b.start);
+
+      // Split window around booked ranges
+      let cursor = w.startMins;
+      for (const booking of sorted) {
+        if (booking.start > cursor) {
+          // Gap before this booking
+          result.push({
+            ...w,
+            startMins: cursor,
+            endMins: booking.start,
+            startLabel: formatTimeFromMins(cursor),
+            endLabel: formatTimeFromMins(booking.start),
+          });
+        }
+        cursor = Math.max(cursor, booking.end);
+      }
+      // Remaining time after last booking
+      if (cursor < w.endMins) {
+        result.push({
+          ...w,
+          startMins: cursor,
+          endMins: w.endMins,
+          startLabel: formatTimeFromMins(cursor),
+          endLabel: formatTimeFromMins(w.endMins),
+        });
+      }
+    }
+    return result;
+  }, [privateSlots, bookedSlots]);
 
   function updateWindowSelection(
     windowIdx: number,
@@ -250,6 +306,10 @@ export default function Home() {
       type: "private",
       sessionIndex: windowIdx,
       sessionDetails: details,
+      bookedDate: window.date,
+      bookedStartTime: formatTimeFromMins(sel.start),
+      bookedEndTime: formatTimeFromMins(endMins),
+      bookedLocation: window.location,
     });
     setSubmitResult(null);
     setParentName("");
@@ -312,6 +372,10 @@ export default function Home() {
           sessionDetails: modal.sessionDetails,
           sessionIndex: modal.sessionIndex,
           totalParticipants,
+          bookedDate: modal.bookedDate,
+          bookedStartTime: modal.bookedStartTime,
+          bookedEndTime: modal.bookedEndTime,
+          bookedLocation: modal.bookedLocation,
         }),
       });
       const data = await res.json();
@@ -324,6 +388,7 @@ export default function Home() {
         setSchedule(fresh.weeklySchedule || []);
         setCamps(fresh.camps || []);
         setPrivateSlots(fresh.privateSlots || []);
+        setBookedSlots(fresh.bookedSlots || []);
       } else {
         setSubmitResult({ success: false, message: data.error });
       }

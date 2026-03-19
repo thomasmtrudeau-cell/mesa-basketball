@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendRegistrationNotification } from "@/lib/email";
+import { addRegistration } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { parentName, email, phone, kids, type, sessionDetails, totalParticipants } = body;
+    const {
+      parentName,
+      email,
+      phone,
+      kids,
+      type,
+      sessionDetails,
+      totalParticipants,
+      bookedDate,
+      bookedStartTime,
+      bookedEndTime,
+      bookedLocation,
+    } = body;
 
     if (!parentName || !email || !phone || !kids || !type || !sessionDetails) {
       return NextResponse.json(
@@ -12,6 +25,21 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Save to Supabase
+    await addRegistration({
+      parentName,
+      email,
+      phone,
+      kids,
+      type,
+      sessionDetails,
+      totalParticipants: totalParticipants || 1,
+      bookedDate,
+      bookedStartTime,
+      bookedEndTime,
+      bookedLocation,
+    });
 
     // Send emails to Artemi + confirmation to parent
     await sendRegistrationNotification({
