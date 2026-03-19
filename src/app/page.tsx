@@ -48,8 +48,13 @@ function parseTime(t: string): number {
   return hours * 60 + mins;
 }
 
-function getSessionDuration(startTime: string, endTime: string): number {
-  return parseTime(endTime) - parseTime(startTime);
+// Minutes since midnight → "4:30 PM"
+function formatTimeFromMins(mins: number): string {
+  const h24 = Math.floor(mins / 60);
+  const m = mins % 60;
+  const period = h24 >= 12 ? "PM" : "AM";
+  const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
+  return `${h12}:${m.toString().padStart(2, "0")} ${period}`;
 }
 
 function getPrivatePrice(durationMin: number, kidCount: number): number {
@@ -67,10 +72,9 @@ interface BookingModal {
   type: BookingType;
   sessionIndex: number;
   sessionDetails: string;
-  selectedSlotIndices: number[];
 }
 
-// Group weekly sessions by group name for display
+// Group weekly sessions by group name
 function groupByGroup(sessions: WeeklySession[]) {
   const groups: Record<string, WeeklySession[]> = {};
   sessions.forEach((s) => {
@@ -80,38 +84,85 @@ function groupByGroup(sessions: WeeklySession[]) {
   return groups;
 }
 
-// Group private slots by date + location for multi-select
-function groupSlotsByDay(slots: PrivateSlot[]) {
-  const groups: { key: string; date: string; location: string; slots: { slot: PrivateSlot; globalIndex: number }[] }[] = [];
-  const map: Record<string, typeof groups[number]> = {};
-  slots.forEach((slot, i) => {
-    const key = `${slot.date}|${slot.location}`;
-    if (!map[key]) {
-      map[key] = { key, date: slot.date, location: slot.location, slots: [] };
-      groups.push(map[key]);
-    }
-    map[key].slots.push({ slot, globalIndex: i });
+// Merge consecutive slots on same day/location into available windows
+interface TimeWindow {
+  date: string;
+  location: string;
+  startMins: number;
+  endMins: number;
+  startLabel: string;
+  endLabel: string;
+}
+
+function buildTimeWindows(slots: PrivateSlot[]): TimeWindow[] {
+  // Group by date + location
+  const groups: Record<string, PrivateSlot[]> = {};
+  slots.forEach((s) => {
+    const key = `${s.date}|${s.location}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(s);
   });
-  return groups;
-}
 
-// Check if selected slots are consecutive (no gaps)
-function areSlotsConsecutive(slots: PrivateSlot[]): boolean {
-  if (slots.length <= 1) return true;
-  const sorted = [...slots].sort((a, b) => parseTime(a.startTime) - parseTime(b.startTime));
-  for (let i = 1; i < sorted.length; i++) {
-    if (parseTime(sorted[i].startTime) !== parseTime(sorted[i - 1].endTime)) {
-      return false;
+  const windows: TimeWindow[] = [];
+  Object.values(groups).forEach((group) => {
+    // Sort by start time
+    const sorted = [...group].sort((a, b) => parseTime(a.startTime) - parseTime(b.startTime));
+    let windowStart = parseTime(sorted[0].startTime);
+    let windowEnd = parseTime(sorted[0].endTime);
+
+    for (let i = 1; i < sorted.length; i++) {
+      const slotStart = parseTime(sorted[i].startTime);
+      const slotEnd = parseTime(sorted[i].endTime);
+      if (slotStart === windowEnd) {
+        // Consecutive — extend window
+        windowEnd = slotEnd;
+      } else {
+        // Gap — close current window and start new one
+        windows.push({
+          date: sorted[0].date,
+          location: sorted[0].location,
+          startMins: windowStart,
+          endMins: windowEnd,
+          startLabel: formatTimeFromMins(windowStart),
+          endLabel: formatTimeFromMins(windowEnd),
+        });
+        windowStart = slotStart;
+        windowEnd = slotEnd;
+      }
     }
-  }
-  return true;
+    // Close last window
+    windows.push({
+      date: sorted[0].date,
+      location: sorted[0].location,
+      startMins: windowStart,
+      endMins: windowEnd,
+      startLabel: formatTimeFromMins(windowStart),
+      endLabel: formatTimeFromMins(windowEnd),
+    });
+  });
+
+  return windows;
 }
 
-function getCombinedTimeRange(slots: PrivateSlot[]): { start: string; end: string; duration: number } {
-  const sorted = [...slots].sort((a, b) => parseTime(a.startTime) - parseTime(b.startTime));
-  const start = sorted[0].startTime;
-  const end = sorted[sorted.length - 1].endTime;
-  return { start, end, duration: getSessionDuration(start, end) };
+// Generate 15-min increment start times within a window
+function getStartOptions(window: TimeWindow, minDuration: number): number[] {
+  const options: number[] = [];
+  // Latest possible start = window end minus minimum duration
+  const latestStart = window.endMins - minDuration;
+  for (let t = window.startMins; t <= latestStart; t += 15) {
+    options.push(t);
+  }
+  return options;
+}
+
+// Generate duration options given a start time and window end
+function getDurationOptions(startMins: number, windowEnd: number): number[] {
+  const options: number[] = [];
+  const maxDuration = windowEnd - startMins;
+  for (let d = 30; d <= maxDuration; d += 15) {
+    options.push(d);
+  }
+  return options;
 }
 
 export default function Home() {
@@ -120,14 +171,17 @@ export default function Home() {
   const [privateSlots, setPrivateSlots] = useState<PrivateSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedSlots, setSelectedSlots] = useState<Set<number>>(new Set());
+
+  // Per-window booking state: windowIndex → { start, duration }
+  const [windowSelections, setWindowSelections] = useState<
+    Record<number, { start: number; duration: number }>
+  >({});
 
   const [modal, setModal] = useState<BookingModal>({
     open: false,
     type: "weekly",
     sessionIndex: 0,
     sessionDetails: "",
-    selectedSlotIndices: [],
   });
 
   // Form state
@@ -157,68 +211,44 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-  const slotGroups = useMemo(() => groupSlotsByDay(privateSlots), [privateSlots]);
+  const timeWindows = useMemo(() => buildTimeWindows(privateSlots), [privateSlots]);
 
-  // Validate current selection
-  const selectedSlotObjects = useMemo(() => {
-    return Array.from(selectedSlots).map((i) => privateSlots[i]).filter(Boolean);
-  }, [selectedSlots, privateSlots]);
-
-  const selectionValid = useMemo(() => {
-    if (selectedSlotObjects.length === 0) return false;
-    // All must be same date + location
-    const date = selectedSlotObjects[0].date;
-    const loc = selectedSlotObjects[0].location;
-    const sameGroup = selectedSlotObjects.every((s) => s.date === date && s.location === loc);
-    return sameGroup && areSlotsConsecutive(selectedSlotObjects);
-  }, [selectedSlotObjects]);
-
-  const selectionSummary = useMemo(() => {
-    if (!selectionValid || selectedSlotObjects.length === 0) return null;
-    const { start, end, duration } = getCombinedTimeRange(selectedSlotObjects);
-    const price = getPrivatePrice(duration, 1);
-    return {
-      date: selectedSlotObjects[0].date,
-      location: selectedSlotObjects[0].location,
-      start,
-      end,
-      duration,
-      price,
-    };
-  }, [selectionValid, selectedSlotObjects]);
-
-  function toggleSlot(globalIndex: number) {
-    setSelectedSlots((prev) => {
-      const next = new Set(prev);
-      if (next.has(globalIndex)) {
-        next.delete(globalIndex);
-      } else {
-        // Check if adding this slot would mix dates/locations
-        const newSlot = privateSlots[globalIndex];
-        const existing = Array.from(next).map((i) => privateSlots[i]).filter(Boolean);
-        if (existing.length > 0) {
-          const sameGroup = existing[0].date === newSlot.date && existing[0].location === newSlot.location;
-          if (!sameGroup) {
-            // Clear previous selection and start fresh
-            return new Set([globalIndex]);
-          }
+  function updateWindowSelection(
+    windowIdx: number,
+    field: "start" | "duration",
+    value: number,
+    window: TimeWindow
+  ) {
+    setWindowSelections((prev) => {
+      const current = prev[windowIdx] || { start: window.startMins, duration: 60 };
+      const updated = { ...current, [field]: value };
+      // If changing start, clamp duration to max available
+      if (field === "start") {
+        const maxDur = window.endMins - value;
+        if (updated.duration > maxDur) {
+          updated.duration = maxDur;
         }
-        next.add(globalIndex);
+        // Ensure minimum 30 min
+        if (updated.duration < 30) {
+          updated.duration = 30;
+        }
       }
-      return next;
+      return { ...prev, [windowIdx]: updated };
     });
   }
 
-  function openPrivateModal() {
-    if (!selectionSummary) return;
-    const indices = Array.from(selectedSlots);
-    const details = `Private Session — ${selectionSummary.date} ${selectionSummary.start}-${selectionSummary.end} (${selectionSummary.duration} min) at ${selectionSummary.location}`;
+  function openPrivateBooking(windowIdx: number, window: TimeWindow) {
+    const sel = windowSelections[windowIdx] || {
+      start: window.startMins,
+      duration: Math.min(60, window.endMins - window.startMins),
+    };
+    const endMins = sel.start + sel.duration;
+    const details = `Private Session — ${window.date} ${formatTimeFromMins(sel.start)}-${formatTimeFromMins(endMins)} (${sel.duration} min) at ${window.location}`;
     setModal({
       open: true,
       type: "private",
-      sessionIndex: indices[0],
+      sessionIndex: windowIdx,
       sessionDetails: details,
-      selectedSlotIndices: indices,
     });
     setSubmitResult(null);
     setParentName("");
@@ -227,12 +257,8 @@ export default function Home() {
     setKids([{ name: "", dob: "", grade: "" }]);
   }
 
-  function openModal(
-    type: BookingType,
-    sessionIndex: number,
-    details: string
-  ) {
-    setModal({ open: true, type, sessionIndex, sessionDetails: details, selectedSlotIndices: [] });
+  function openModal(type: BookingType, sessionIndex: number, details: string) {
+    setModal({ open: true, type, sessionIndex, sessionDetails: details });
     setSubmitResult(null);
     setParentName("");
     setEmail("");
@@ -264,7 +290,6 @@ export default function Home() {
     const totalParticipants = kids.length;
     let bookingType = modal.type;
 
-    // Auto-determine private vs group-private
     if (bookingType === "private" || bookingType === "group-private") {
       bookingType = totalParticipants >= 4 ? "group-private" : "private";
     }
@@ -292,8 +317,6 @@ export default function Home() {
           success: true,
           message: "Registration confirmed! Check your email for details.",
         });
-        setSelectedSlots(new Set());
-        // Refresh schedule data
         const fresh = await fetch("/api/schedule").then((r) => r.json());
         setSchedule(fresh.weeklySchedule || []);
         setCamps(fresh.camps || []);
@@ -311,21 +334,13 @@ export default function Home() {
     }
   }
 
+  // Compute price for the modal based on selected window duration
   const priceLabel = (() => {
     if (modal.type !== "private" && modal.type !== "group-private") return null;
-    // Use combined duration from selected slots
-    if (modal.selectedSlotIndices.length > 0) {
-      const slots = modal.selectedSlotIndices.map((i) => privateSlots[i]).filter(Boolean);
-      if (slots.length === 0) return null;
-      const { duration } = getCombinedTimeRange(slots);
-      const price = getPrivatePrice(duration, kids.length);
-      const tier = kids.length >= 4 ? "Group Private — 4+ participants" : "Private — up to 3 participants";
-      const timeNote = duration !== 60 ? ` (${duration} min session)` : "";
-      return `${formatPrice(price)} (${tier})${timeNote}`;
-    }
-    const slot = privateSlots[modal.sessionIndex];
-    if (!slot) return null;
-    const duration = getSessionDuration(slot.startTime, slot.endTime);
+    // Extract duration from session details
+    const match = modal.sessionDetails.match(/\((\d+) min\)/);
+    if (!match) return null;
+    const duration = parseInt(match[1]);
     const price = getPrivatePrice(duration, kids.length);
     const tier = kids.length >= 4 ? "Group Private — 4+ participants" : "Private — up to 3 participants";
     const timeNote = duration !== 60 ? ` (${duration} min session)` : "";
@@ -404,30 +419,23 @@ export default function Home() {
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             <div className="rounded-xl bg-brown-800/60 p-6">
               <div className="mb-3 text-3xl">🏀</div>
-              <h3 className="font-semibold text-mesa-accent">
-                Skill Development
-              </h3>
+              <h3 className="font-semibold text-mesa-accent">Skill Development</h3>
               <p className="mt-2 text-sm text-brown-300">
                 Expert guidance on shooting, dribbling, ball handling & more
               </p>
             </div>
             <div className="rounded-xl bg-brown-800/60 p-6">
               <div className="mb-3 text-3xl">💪</div>
-              <h3 className="font-semibold text-mesa-accent">
-                High Energy Drills
-              </h3>
+              <h3 className="font-semibold text-mesa-accent">High Energy Drills</h3>
               <p className="mt-2 text-sm text-brown-300">
                 Build confidence, skill, and game IQ through competitive drills
               </p>
             </div>
             <div className="rounded-xl bg-brown-800/60 p-6">
               <div className="mb-3 text-3xl">🎓</div>
-              <h3 className="font-semibold text-mesa-accent">
-                D1 Experience
-              </h3>
+              <h3 className="font-semibold text-mesa-accent">D1 Experience</h3>
               <p className="mt-2 text-sm text-brown-300">
-                Knowledge from playing at St. John&apos;s, Butler, and
-                professionally in Greece
+                Knowledge from playing at St. John&apos;s, Butler, and professionally in Greece
               </p>
             </div>
           </div>
@@ -442,46 +450,24 @@ export default function Home() {
             Group training sessions — spots are limited to 12 per session
           </p>
 
-          {loading && (
-            <p className="mt-8 text-center text-brown-400">
-              Loading schedule...
-            </p>
-          )}
-          {error && (
-            <p className="mt-8 text-center text-red-400">{error}</p>
-          )}
+          {loading && <p className="mt-8 text-center text-brown-400">Loading schedule...</p>}
+          {error && <p className="mt-8 text-center text-red-400">{error}</p>}
 
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             {Object.entries(grouped).map(([group, sessions]) => (
-              <div
-                key={group}
-                className="rounded-xl border border-brown-700 bg-brown-900/40 p-6"
-              >
-                <h3 className="mb-4 text-lg font-bold text-mesa-accent">
-                  {group}
-                </h3>
+              <div key={group} className="rounded-xl border border-brown-700 bg-brown-900/40 p-6">
+                <h3 className="mb-4 text-lg font-bold text-mesa-accent">{group}</h3>
                 <div className="space-y-3">
                   {sessions.map((s, i) => {
                     const globalIndex = schedule.indexOf(s);
                     return (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between rounded-lg bg-brown-800/50 px-4 py-3"
-                      >
+                      <div key={i} className="flex items-center justify-between rounded-lg bg-brown-800/50 px-4 py-3">
                         <div>
-                          <p className="font-medium">
-                            {s.day} {s.startTime} - {s.endTime}
-                          </p>
+                          <p className="font-medium">{s.day} {s.startTime} - {s.endTime}</p>
                           <p className="text-sm text-brown-400">{s.location}</p>
                         </div>
                         <button
-                          onClick={() =>
-                            openModal(
-                              "weekly",
-                              globalIndex,
-                              `${group} — ${s.day} ${s.startTime}-${s.endTime} at ${s.location}`
-                            )
-                          }
+                          onClick={() => openModal("weekly", globalIndex, `${group} — ${s.day} ${s.startTime}-${s.endTime} at ${s.location}`)}
                           className="rounded bg-mesa-accent px-3 py-1 text-xs font-semibold text-white transition hover:bg-amber-600"
                         >
                           Register
@@ -501,14 +487,11 @@ export default function Home() {
         <div className="mx-auto max-w-5xl px-6">
           <h2 className="text-center text-3xl font-bold">Mini Camps</h2>
           <p className="mt-2 text-center text-brown-400">
-            Summer &amp; break camps — register early, spots fill fast (max 20
-            per camp)
+            Summer &amp; break camps — register early, spots fill fast (max 20 per camp)
           </p>
 
           {camps.length === 0 && !loading && (
-            <p className="mt-8 text-center text-brown-500">
-              No upcoming camps scheduled. Check back soon!
-            </p>
+            <p className="mt-8 text-center text-brown-500">No upcoming camps scheduled. Check back soon!</p>
           )}
 
           <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -516,48 +499,25 @@ export default function Home() {
               const spotsLeft = camp.maxSpots - camp.currentEnrolled;
               const full = spotsLeft <= 0;
               return (
-                <div
-                  key={camp.id}
-                  className="rounded-xl border border-brown-700 bg-brown-900/40 p-6"
-                >
+                <div key={camp.id} className="rounded-xl border border-brown-700 bg-brown-900/40 p-6">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-lg font-bold text-mesa-accent">
-                        {camp.name}
-                      </h3>
-                      <p className="text-sm text-brown-300">
-                        {camp.startDate} — {camp.endDate}
-                      </p>
+                      <h3 className="text-lg font-bold text-mesa-accent">{camp.name}</h3>
+                      <p className="text-sm text-brown-300">{camp.startDate} — {camp.endDate}</p>
                     </div>
                     <span className="rounded-full bg-brown-800 px-3 py-1 text-sm font-semibold text-mesa-accent">
                       {camp.price}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-brown-400">
-                    {camp.time} &bull; {camp.location}
-                  </p>
-                  {camp.description && (
-                    <p className="mt-2 text-sm text-brown-300">
-                      {camp.description}
-                    </p>
-                  )}
+                  <p className="mt-2 text-sm text-brown-400">{camp.time} &bull; {camp.location}</p>
+                  {camp.description && <p className="mt-2 text-sm text-brown-300">{camp.description}</p>}
                   <div className="mt-4 flex items-center justify-between">
-                    <span
-                      className={`text-sm font-medium ${full ? "text-red-400" : spotsLeft <= 5 ? "text-yellow-400" : "text-green-400"}`}
-                    >
-                      {full
-                        ? "FULL"
-                        : `${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""} left`}
+                    <span className={`text-sm font-medium ${full ? "text-red-400" : spotsLeft <= 5 ? "text-yellow-400" : "text-green-400"}`}>
+                      {full ? "FULL" : `${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""} left`}
                     </span>
                     {!full && (
                       <button
-                        onClick={() =>
-                          openModal(
-                            "camp",
-                            i,
-                            `${camp.name} (${camp.startDate} — ${camp.endDate}) at ${camp.location}`
-                          )
-                        }
+                        onClick={() => openModal("camp", i, `${camp.name} (${camp.startDate} — ${camp.endDate}) at ${camp.location}`)}
                         className="rounded bg-mesa-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
                       >
                         Register
@@ -588,79 +548,93 @@ export default function Home() {
           <p className="mt-2 text-center text-sm text-brown-500">
             Prorated for shorter sessions &bull; Payment in person — Cash, Venmo, or Zelle
           </p>
-          <p className="mt-1 text-center text-sm text-brown-500">
-            Select one or more consecutive time slots to combine them
-          </p>
 
           {privateSlots.length === 0 && !loading && (
             <p className="mt-8 text-center text-brown-500">
-              No available slots right now. Check back soon or contact Artemios
-              directly.
+              No available slots right now. Check back soon or contact Artemios directly.
             </p>
           )}
 
-          {/* Selection summary bar */}
-          {selectionSummary && (
-            <div className="sticky top-0 z-40 mt-6 flex items-center justify-between rounded-xl bg-mesa-accent/20 border border-mesa-accent/40 px-5 py-3">
-              <div>
-                <p className="font-semibold text-mesa-accent">
-                  {selectionSummary.date} &bull; {selectionSummary.start} - {selectionSummary.end} ({selectionSummary.duration} min)
-                </p>
-                <p className="text-sm text-brown-300">
-                  {selectionSummary.location} &bull; From {formatPrice(selectionSummary.price)}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSelectedSlots(new Set())}
-                  className="rounded bg-brown-700 px-3 py-2 text-sm text-brown-300 hover:bg-brown-600"
-                >
-                  Clear
-                </button>
-                <button
-                  onClick={openPrivateModal}
-                  className="rounded bg-mesa-accent px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600"
-                >
-                  Book Selected
-                </button>
-              </div>
-            </div>
-          )}
+          <div className="mt-8 space-y-4">
+            {timeWindows.map((window, wi) => {
+              const totalAvailable = window.endMins - window.startMins;
+              const sel = windowSelections[wi] || {
+                start: window.startMins,
+                duration: Math.min(60, totalAvailable),
+              };
+              const startOptions = getStartOptions(window, 30);
+              const durationOptions = getDurationOptions(sel.start, window.endMins);
+              const endTime = formatTimeFromMins(sel.start + sel.duration);
+              const price = getPrivatePrice(sel.duration, 1);
 
-          {selectedSlots.size > 0 && !selectionValid && (
-            <p className="mt-4 text-center text-sm text-yellow-400">
-              Selected slots must be consecutive. Deselect non-adjacent slots.
-            </p>
-          )}
+              return (
+                <div
+                  key={wi}
+                  className="rounded-xl border border-brown-700 bg-brown-900/40 p-5"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <h3 className="font-semibold text-brown-200">{window.date}</h3>
+                      <p className="text-sm text-brown-500">
+                        {window.location} &bull; Available {window.startLabel} - {window.endLabel} ({totalAvailable} min)
+                      </p>
+                    </div>
+                  </div>
 
-          <div className="mt-6 space-y-6">
-            {slotGroups.map((group) => (
-              <div key={group.key} className="rounded-xl border border-brown-700 bg-brown-900/40 p-5">
-                <h3 className="mb-3 font-semibold text-brown-200">
-                  {group.date} <span className="text-sm font-normal text-brown-500">&bull; {group.location}</span>
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {group.slots.map(({ slot, globalIndex }) => {
-                    const isSelected = selectedSlots.has(globalIndex);
-                    const duration = getSessionDuration(slot.startTime, slot.endTime);
-                    return (
-                      <button
-                        key={slot.id}
-                        onClick={() => toggleSlot(globalIndex)}
-                        className={`rounded-lg border px-4 py-2 text-left text-sm transition ${
-                          isSelected
-                            ? "border-mesa-accent bg-mesa-accent/20 text-white"
-                            : "border-brown-700 bg-brown-800/50 text-brown-300 hover:border-brown-500"
-                        }`}
+                  <div className="mt-4 flex flex-wrap items-end gap-4">
+                    <div>
+                      <label className="mb-1 block text-xs text-brown-400">Start Time</label>
+                      <select
+                        value={sel.start}
+                        onChange={(e) =>
+                          updateWindowSelection(wi, "start", parseInt(e.target.value), window)
+                        }
+                        className="rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-sm text-white focus:border-mesa-accent focus:outline-none"
                       >
-                        <span className="font-medium">{slot.startTime} - {slot.endTime}</span>
-                        <span className="ml-1 text-xs text-brown-500">({duration}m)</span>
-                      </button>
-                    );
-                  })}
+                        {startOptions.map((t) => (
+                          <option key={t} value={t}>
+                            {formatTimeFromMins(t)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-xs text-brown-400">Duration</label>
+                      <select
+                        value={sel.duration}
+                        onChange={(e) =>
+                          updateWindowSelection(wi, "duration", parseInt(e.target.value), window)
+                        }
+                        className="rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-sm text-white focus:border-mesa-accent focus:outline-none"
+                      >
+                        {durationOptions.map((d) => (
+                          <option key={d} value={d}>
+                            {d} min
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="text-sm text-brown-300">
+                      <span className="text-white font-medium">
+                        {formatTimeFromMins(sel.start)} - {endTime}
+                      </span>
+                      <span className="ml-2 text-mesa-accent font-semibold">
+                        From {formatPrice(price)}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => openPrivateBooking(wi, window)}
+                      className="rounded bg-mesa-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+                    >
+                      Book
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -672,23 +646,17 @@ export default function Home() {
           <div className="mt-4 space-y-1 text-brown-300">
             <p>
               <span className="font-semibold text-white">Call / Text:</span>{" "}
-              <a href="tel:6315991280" className="hover:text-mesa-accent">
-                (631) 599-1280
-              </a>
+              <a href="tel:6315991280" className="hover:text-mesa-accent">(631) 599-1280</a>
             </p>
             <p>
               <span className="font-semibold text-white">Email:</span>{" "}
-              <a
-                href="mailto:artemios@mesabasketballtraining.com"
-                className="hover:text-mesa-accent"
-              >
+              <a href="mailto:artemios@mesabasketballtraining.com" className="hover:text-mesa-accent">
                 artemios@mesabasketballtraining.com
               </a>
             </p>
           </div>
           <p className="mt-8 text-sm text-brown-600">
-            &copy; {new Date().getFullYear()} Mesa Basketball Training. All
-            rights reserved.
+            &copy; {new Date().getFullYear()} Mesa Basketball Training. All rights reserved.
           </p>
         </div>
       </footer>
@@ -705,35 +673,23 @@ export default function Home() {
                     ? "Session Registration"
                     : "Book Private Session"}
               </h3>
-              <button
-                onClick={closeModal}
-                className="text-2xl text-brown-400 hover:text-white"
-              >
+              <button onClick={closeModal} className="text-2xl text-brown-400 hover:text-white">
                 &times;
               </button>
             </div>
-            <p className="mt-1 text-sm text-brown-400">
-              {modal.sessionDetails}
-            </p>
+            <p className="mt-1 text-sm text-brown-400">{modal.sessionDetails}</p>
 
             {submitResult?.success ? (
               <div className="mt-6 rounded-lg bg-green-900/50 p-4 text-center">
-                <p className="text-lg font-semibold text-green-400">
-                  {submitResult.message}
-                </p>
-                <button
-                  onClick={closeModal}
-                  className="mt-4 rounded bg-brown-700 px-4 py-2 text-sm hover:bg-brown-600"
-                >
+                <p className="text-lg font-semibold text-green-400">{submitResult.message}</p>
+                <button onClick={closeModal} className="mt-4 rounded bg-brown-700 px-4 py-2 text-sm hover:bg-brown-600">
                   Close
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="mt-4 space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-brown-300">
-                    Parent / Guardian Name
-                  </label>
+                  <label className="mb-1 block text-sm font-medium text-brown-300">Parent / Guardian Name</label>
                   <input
                     type="text"
                     required
@@ -744,9 +700,7 @@ export default function Home() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-brown-300">
-                      Email
-                    </label>
+                    <label className="mb-1 block text-sm font-medium text-brown-300">Email</label>
                     <input
                       type="email"
                       required
@@ -756,9 +710,7 @@ export default function Home() {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-brown-300">
-                      Phone
-                    </label>
+                    <label className="mb-1 block text-sm font-medium text-brown-300">Phone</label>
                     <input
                       type="tel"
                       required
@@ -771,14 +723,8 @@ export default function Home() {
 
                 <div>
                   <div className="mb-2 flex items-center justify-between">
-                    <label className="text-sm font-medium text-brown-300">
-                      Kid(s)
-                    </label>
-                    <button
-                      type="button"
-                      onClick={addKid}
-                      className="text-sm text-mesa-accent hover:text-amber-400"
-                    >
+                    <label className="text-sm font-medium text-brown-300">Kid(s)</label>
+                    <button type="button" onClick={addKid} className="text-sm text-mesa-accent hover:text-amber-400">
                       + Add another kid
                     </button>
                   </div>
@@ -809,11 +755,7 @@ export default function Home() {
                         className="w-20 rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white placeholder-brown-500 focus:border-mesa-accent focus:outline-none"
                       />
                       {kids.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeKid(i)}
-                          className="text-brown-500 hover:text-red-400"
-                        >
+                        <button type="button" onClick={() => removeKid(i)} className="text-brown-500 hover:text-red-400">
                           &times;
                         </button>
                       )}
@@ -822,9 +764,7 @@ export default function Home() {
                 </div>
 
                 {priceLabel && (
-                  <p className="rounded-lg bg-brown-800 px-3 py-2 text-sm text-mesa-accent">
-                    {priceLabel}
-                  </p>
+                  <p className="rounded-lg bg-brown-800 px-3 py-2 text-sm text-mesa-accent">{priceLabel}</p>
                 )}
 
                 {submitResult && !submitResult.success && (
