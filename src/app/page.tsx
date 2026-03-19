@@ -480,7 +480,8 @@ export default function Home() {
           ? `${modal.sessionDetails} + recurring (${allDatesLabel})`
           : modal.sessionDetails;
 
-      // Register each date
+      // Register each date (skip emails for all — we'll send one consolidated email)
+      const isRecurring = datesToBook.length > 1;
       for (const booking of datesToBook) {
         await fetch("/api/register", {
           method: "POST",
@@ -491,23 +492,24 @@ export default function Home() {
             phone,
             kids: kidsStr,
             type: bookingType,
-            sessionDetails: datesToBook.length > 1
-              ? `Private Session — ${booking.date} ${booking.startTime}-${booking.endTime} at ${booking.location}`
-              : modal.sessionDetails,
+            sessionDetails: `Private Session — ${booking.date} ${booking.startTime}-${booking.endTime} at ${booking.location}`,
             sessionIndex: modal.sessionIndex,
             totalParticipants,
             bookedDate: booking.date,
             bookedStartTime: booking.startTime,
             bookedEndTime: booking.endTime,
             bookedLocation: booking.location,
-            skipEmail: booking !== datesToBook[0], // only send email for first booking
+            skipEmail: isRecurring, // skip individual emails if recurring
             submittedReferralCode: referralCode.trim() || undefined,
           }),
         });
       }
 
-      // Send one summary email if recurring
-      if (datesToBook.length > 1) {
+      // Send one consolidated email listing all dates
+      if (isRecurring) {
+        const allSessionsList = datesToBook
+          .map((d) => `${d.date} ${d.startTime}-${d.endTime} at ${d.location}`)
+          .join("<br/>");
         await fetch("/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -517,10 +519,11 @@ export default function Home() {
             phone,
             kids: kidsStr,
             type: bookingType,
-            sessionDetails: sessionDetailsAll,
+            sessionDetails: `Recurring Private Sessions:<br/>${allSessionsList}`,
             sessionIndex: modal.sessionIndex,
             totalParticipants,
             emailOnly: true,
+            submittedReferralCode: referralCode.trim() || undefined,
           }),
         });
       }
