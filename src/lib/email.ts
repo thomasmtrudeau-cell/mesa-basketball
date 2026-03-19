@@ -93,7 +93,7 @@ export async function sendRegistrationNotification(data: {
     : `<p><a href="${BASE_URL}/my-bookings" style="color: #c4833e; font-weight: bold;">View My Bookings</a> — Manage, cancel, or reschedule your sessions</p>`;
 
   const referralSection = data.referralCode
-    ? `<p style="background: #1e293b; padding: 12px; border-radius: 8px; margin-top: 12px;"><strong>Your referral code: ${data.referralCode}</strong><br/><span style="font-size: 13px; color: #94a3b8;">Share it with friends — when they book their first session, you both earn credit toward a free session.</span></p>`
+    ? `<p style="background: #f5f0eb; padding: 12px; border-radius: 8px; margin-top: 12px; color: #3d2519;"><strong style="color: #5c3d2e;">Your referral code: ${data.referralCode}</strong><br/><span style="font-size: 13px; color: #7c5e52;">Share it with friends — when they book their first session, you both earn credit toward a free session.</span></p>`
     : "";
 
   await resend.emails.send({
