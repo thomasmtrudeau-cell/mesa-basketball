@@ -28,6 +28,8 @@ export interface Registration {
   booked_location: string | null;
   status: string;
   manage_token: string;
+  referral_code: string | null;
+  is_free: boolean;
 }
 
 export async function addRegistration(data: {
