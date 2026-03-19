@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const LOCATION_NAMES: Record<string, string> = {
   "St. Pauls": "St. Paul's Cathedral",
@@ -38,31 +38,46 @@ export default function MyBookings() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleLookup(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email.trim()) return;
+  // Load saved email and auto-lookup
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("mesa_parent_email");
+      if (saved) {
+        setEmail(saved);
+        lookupBookings(saved);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  async function lookupBookings(lookupEmail: string) {
     setLoading(true);
     setError("");
     setBookings(null);
-
     try {
       const res = await fetch("/api/my-bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: lookupEmail.trim() }),
       });
       const data = await res.json();
       if (data.error) {
         setError(data.error);
       } else {
         setBookings(data.registrations);
+        localStorage.setItem("mesa_parent_email", lookupEmail.trim());
       }
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleLookup(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    lookupBookings(email);
   }
 
   return (

@@ -620,6 +620,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-mesa-dark text-white">
+      {/* Sticky Nav */}
+      <nav className="sticky top-0 z-50 border-b border-brown-800 bg-mesa-dark/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+          <a href="#" className="text-lg font-bold text-white">Mesa Basketball</a>
+          <div className="flex items-center gap-4 text-sm">
+            <a href="#schedule" className="text-brown-300 hover:text-white">Schedule</a>
+            <a href="#camps" className="text-brown-300 hover:text-white">Camps</a>
+            <a href="#private" className="text-brown-300 hover:text-white">Private Sessions</a>
+            <a href="/my-bookings" className="rounded bg-mesa-accent/20 px-3 py-1 text-mesa-accent hover:bg-mesa-accent/30">My Bookings</a>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero */}
       <header className="relative overflow-hidden bg-gradient-to-br from-mesa-dark via-brown-900 to-brown-800">
         <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
