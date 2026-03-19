@@ -239,6 +239,8 @@ export default function Home() {
   const [kids, setKids] = useState([{ name: "", dob: "", grade: "" }]);
   const [isGroupRate, setIsGroupRate] = useState(false);
   const [hideUpsell, setHideUpsell] = useState(false);
+  const [filterDays, setFilterDays] = useState<Set<number>>(new Set());
+  const [filterMonth, setFilterMonth] = useState<string>("");
   const [upsellExtra, setUpsellExtra] = useState(0); // extra minutes accepted
   const [referralCode, setReferralCode] = useState("");
 
@@ -574,6 +576,43 @@ export default function Home() {
     return `${formatPrice(totalPrice)} (${tier})${timeNote}${savingsNote}`;
   })();
 
+  // Filter time windows by day of week and month
+  const filteredWindows = useMemo(() => {
+    return timeWindows.filter((w) => {
+      if (w.endMins - w.startMins < 60) return false;
+      const d = new Date(w.date);
+      if (filterDays.size > 0 && !filterDays.has(d.getUTCDay())) return false;
+      if (filterMonth) {
+        const monthStr = d.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+        if (monthStr !== filterMonth) return false;
+      }
+      return true;
+    });
+  }, [timeWindows, filterDays, filterMonth]);
+
+  // Available months from time windows
+  const availableMonths = useMemo(() => {
+    const months = new Set<string>();
+    timeWindows.forEach((w) => {
+      if (w.endMins - w.startMins < 60) return;
+      const d = new Date(w.date);
+      months.add(d.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" }));
+    });
+    return Array.from(months);
+  }, [timeWindows]);
+
+  // Available days from time windows
+  const availableDays = useMemo(() => {
+    const days = new Set<number>();
+    timeWindows.forEach((w) => {
+      if (w.endMins - w.startMins < 60) return;
+      days.add(new Date(w.date).getUTCDay());
+    });
+    return Array.from(days).sort();
+  }, [timeWindows]);
+
+  const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
   const grouped = groupByGroup(schedule);
 
   return (
@@ -785,8 +824,64 @@ export default function Home() {
             </p>
           )}
 
-          <div className="mt-8 space-y-4">
-            {timeWindows.filter((w) => w.endMins - w.startMins >= 60).map((window, wi) => {
+          {/* Filters */}
+          {timeWindows.length > 0 && (
+            <div className="mt-6 space-y-3">
+              {/* Day of week pills */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-brown-500 mr-1">Day:</span>
+                {availableDays.map((day) => (
+                  <button
+                    key={day}
+                    onClick={() => setFilterDays((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(day)) next.delete(day);
+                      else next.add(day);
+                      return next;
+                    })}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                      filterDays.has(day)
+                        ? "bg-mesa-accent text-white"
+                        : "bg-brown-800 text-brown-400 hover:bg-brown-700"
+                    }`}
+                  >
+                    {DAY_LABELS[day]}
+                  </button>
+                ))}
+                {filterDays.size > 0 && (
+                  <button
+                    onClick={() => setFilterDays(new Set())}
+                    className="text-xs text-brown-500 hover:text-brown-400"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {/* Month dropdown */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-brown-500">Month:</span>
+                <select
+                  value={filterMonth}
+                  onChange={(e) => setFilterMonth(e.target.value)}
+                  className="rounded-lg border border-brown-700 bg-brown-800 px-3 py-1 text-sm text-white focus:border-mesa-accent focus:outline-none"
+                >
+                  <option value="">All months</option>
+                  {availableMonths.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {filteredWindows.length === 0 && timeWindows.length > 0 && (filterDays.size > 0 || filterMonth) && (
+            <p className="mt-6 text-center text-sm text-brown-500">
+              No sessions match your filters. Try adjusting your selection.
+            </p>
+          )}
+
+          <div className="mt-6 space-y-4">
+            {filteredWindows.map((window, wi) => {
               const totalAvailable = window.endMins - window.startMins;
               const sel = windowSelections[wi] || {
                 start: window.startMins,
