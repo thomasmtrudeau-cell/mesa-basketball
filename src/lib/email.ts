@@ -62,13 +62,7 @@ export async function sendRegistrationNotification(data: {
       <p><strong>Session:</strong> ${data.sessionDetails}</p>
       <p><strong>Kids:</strong> ${data.kids}</p>
       ${priceNote}
-      <p><strong>Payment:</strong></p>
-      <ul>
-        <li>Venmo: <strong>@Artemios-Gavalas</strong></li>
-        <li>Zelle: <strong>artemios@mesabasketballtraining.com</strong></li>
-        <li>Cash accepted at the session</li>
-      </ul>
-      <p><strong>Cancellation Policy:</strong> Please provide at least 24 hours' notice for any cancellation. If a session is canceled with less than 24 hours' notice, 50% of the session fee will still be due.</p>
+      <p>Payments can be made via Zelle (<strong>artemios@mesabasketballtraining.com</strong>), Cash, or Venmo (<strong>@Artemios-Gavalas</strong>). Please provide at least 24 hours' notice if you need to cancel or reschedule a session. Cancellations made within 24 hours of the scheduled session will result in a 50% charge of the session fee.</p>
       <br/>
       <p>Questions? Contact Artemios at (631) 599-1280 or email <a href="mailto:artemios@mesabasketballtraining.com">artemios@mesabasketballtraining.com</a>.</p>
       <p>— Mesa Basketball Training</p>
