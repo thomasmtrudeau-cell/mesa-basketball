@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRegistrationsByEmail } from "@/lib/supabase";
+import {
+  getRegistrationsByEmail,
+  getConfirmedSessionCount,
+  getReferralCredits,
+  generateReferralCode,
+} from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -13,7 +18,22 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const registrations = await getRegistrationsByEmail(email);
+    const [registrations, sessionCount, referralCredits] = await Promise.all([
+      getRegistrationsByEmail(email),
+      getConfirmedSessionCount(email).catch(() => 0),
+      getReferralCredits(email).catch(() => 0),
+    ]);
+
+    // Get referral code from most recent registration, or generate one
+    const referralCode =
+      registrations.find((r) => r.referral_code)?.referral_code ||
+      (registrations.length > 0
+        ? generateReferralCode(registrations[0].parent_name)
+        : null);
+
+    const effectiveCount = sessionCount + referralCredits;
+    const sessionsUntilFree = 11 - (effectiveCount % 11);
+
     return NextResponse.json({
       registrations: registrations.map((r) => ({
         id: r.id,
@@ -29,6 +49,13 @@ export async function POST(req: NextRequest) {
         status: r.status,
         manageToken: r.manage_token,
       })),
+      rewards: {
+        sessionCount,
+        referralCredits,
+        effectiveCount,
+        sessionsUntilFree: sessionsUntilFree === 11 ? 11 : sessionsUntilFree,
+        referralCode,
+      },
     });
   } catch {
     return NextResponse.json(
