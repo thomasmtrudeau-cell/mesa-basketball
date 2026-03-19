@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 
 const ARTEMI_EMAIL = "artemios@mesabasketballtraining.com";
-const FROM_EMAIL = "Mesa Basketball <onboarding@resend.dev>";
+const FROM_EMAIL = "Mesa Basketball <noreply@mesabasketballtraining.com>";
 
 function getResend() {
   const key = process.env.RESEND_API_KEY;

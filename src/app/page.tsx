@@ -189,6 +189,7 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [kids, setKids] = useState([{ name: "", dob: "", grade: "" }]);
+  const [isGroupRate, setIsGroupRate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<{
     success: boolean;
@@ -255,6 +256,7 @@ export default function Home() {
     setEmail("");
     setPhone("");
     setKids([{ name: "", dob: "", grade: "" }]);
+    setIsGroupRate(false);
   }
 
   function openModal(type: BookingType, sessionIndex: number, details: string) {
@@ -264,6 +266,7 @@ export default function Home() {
     setEmail("");
     setPhone("");
     setKids([{ name: "", dob: "", grade: "" }]);
+    setIsGroupRate(false);
   }
 
   function closeModal() {
@@ -291,7 +294,7 @@ export default function Home() {
     let bookingType = modal.type;
 
     if (bookingType === "private" || bookingType === "group-private") {
-      bookingType = totalParticipants >= 4 ? "group-private" : "private";
+      bookingType = (isGroupRate || totalParticipants >= 4) ? "group-private" : "private";
     }
 
     const kidsStr = kids.map((k) => `${k.name} (DOB: ${k.dob}, Grade: ${k.grade})`).join(", ");
@@ -341,8 +344,9 @@ export default function Home() {
     const match = modal.sessionDetails.match(/\((\d+) min\)/);
     if (!match) return null;
     const duration = parseInt(match[1]);
-    const price = getPrivatePrice(duration, kids.length);
-    const tier = kids.length >= 4 ? "Group Private — 4+ participants" : "Private — up to 3 participants";
+    const effectiveGroup = isGroupRate || kids.length >= 4;
+    const price = getPrivatePrice(duration, effectiveGroup ? 4 : kids.length);
+    const tier = effectiveGroup ? "Group Private — 4+ participants" : "Private — up to 3 participants";
     const timeNote = duration !== 60 ? ` (${duration} min session)` : "";
     return `${formatPrice(price)} (${tier})${timeNote}`;
   })();
@@ -764,9 +768,32 @@ export default function Home() {
                 </div>
 
                 {(modal.type === "private" || modal.type === "group-private") && (
-                  <p className="text-xs text-brown-500">
-                    1-3 kids: Private rate ($150/hr) &bull; 4+ kids: Group rate ($250/hr)
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsGroupRate(false)}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                        !isGroupRate && kids.length < 4
+                          ? "border-mesa-accent bg-mesa-accent/20 text-mesa-accent"
+                          : "border-brown-700 text-brown-400 hover:border-brown-500"
+                      }`}
+                    >
+                      Private ($150/hr)
+                      <span className="block text-xs font-normal">Up to 3 kids</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsGroupRate(true)}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                        isGroupRate || kids.length >= 4
+                          ? "border-mesa-accent bg-mesa-accent/20 text-mesa-accent"
+                          : "border-brown-700 text-brown-400 hover:border-brown-500"
+                      }`}
+                    >
+                      Group ($250/hr)
+                      <span className="block text-xs font-normal">4+ kids</span>
+                    </button>
+                  </div>
                 )}
 
                 {priceLabel && (
