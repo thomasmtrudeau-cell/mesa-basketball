@@ -64,7 +64,7 @@ export async function sendRegistrationNotification(data: {
       ${priceNote}
       <p><strong>Payment:</strong> Cash, Venmo, or Zelle accepted at the session.</p>
       <br/>
-      <p>Questions? Contact Artemios at (631) 599-1280 or reply to this email.</p>
+      <p>Questions? Contact Artemios at (631) 599-1280 or email <a href="mailto:artemios@mesabasketballtraining.com">artemios@mesabasketballtraining.com</a>.</p>
       <p>— Mesa Basketball Training</p>
     `,
   });
