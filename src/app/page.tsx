@@ -134,7 +134,7 @@ export default function Home() {
   const [parentName, setParentName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [kids, setKids] = useState([{ name: "", age: "" }]);
+  const [kids, setKids] = useState([{ name: "", dob: "", grade: "" }]);
   const [submitting, setSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<{
     success: boolean;
@@ -224,7 +224,7 @@ export default function Home() {
     setParentName("");
     setEmail("");
     setPhone("");
-    setKids([{ name: "", age: "" }]);
+    setKids([{ name: "", dob: "", grade: "" }]);
   }
 
   function openModal(
@@ -237,7 +237,7 @@ export default function Home() {
     setParentName("");
     setEmail("");
     setPhone("");
-    setKids([{ name: "", age: "" }]);
+    setKids([{ name: "", dob: "", grade: "" }]);
   }
 
   function closeModal() {
@@ -245,14 +245,14 @@ export default function Home() {
   }
 
   function addKid() {
-    setKids((k) => [...k, { name: "", age: "" }]);
+    setKids((k) => [...k, { name: "", dob: "", grade: "" }]);
   }
 
   function removeKid(i: number) {
     setKids((k) => k.filter((_, idx) => idx !== i));
   }
 
-  function updateKid(i: number, field: "name" | "age", value: string) {
+  function updateKid(i: number, field: "name" | "dob" | "grade", value: string) {
     setKids((k) => k.map((kid, idx) => (idx === i ? { ...kid, [field]: value } : kid)));
   }
 
@@ -269,7 +269,7 @@ export default function Home() {
       bookingType = totalParticipants >= 4 ? "group-private" : "private";
     }
 
-    const kidsStr = kids.map((k) => `${k.name} (age ${k.age})`).join(", ");
+    const kidsStr = kids.map((k) => `${k.name} (DOB: ${k.dob}, Grade: ${k.grade})`).join(", ");
 
     try {
       const res = await fetch("/api/register", {
@@ -793,11 +793,19 @@ export default function Home() {
                         className="flex-1 rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white placeholder-brown-500 focus:border-mesa-accent focus:outline-none"
                       />
                       <input
-                        type="text"
-                        placeholder="Age"
+                        type="date"
                         required
-                        value={kid.age}
-                        onChange={(e) => updateKid(i, "age", e.target.value)}
+                        value={kid.dob}
+                        onChange={(e) => updateKid(i, "dob", e.target.value)}
+                        className="w-36 rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white placeholder-brown-500 focus:border-mesa-accent focus:outline-none"
+                        title="Date of Birth"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Grade"
+                        required
+                        value={kid.grade}
+                        onChange={(e) => updateKid(i, "grade", e.target.value)}
                         className="w-20 rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white placeholder-brown-500 focus:border-mesa-accent focus:outline-none"
                       />
                       {kids.length > 1 && (
