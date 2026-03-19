@@ -17,6 +17,8 @@ export async function POST(req: NextRequest) {
       bookedStartTime,
       bookedEndTime,
       bookedLocation,
+      skipEmail,
+      emailOnly,
     } = body;
 
     if (!parentName || !email || !phone || !kids || !type || !sessionDetails) {
@@ -26,31 +28,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Save to Supabase
-    await addRegistration({
-      parentName,
-      email,
-      phone,
-      kids,
-      type,
-      sessionDetails,
-      totalParticipants: totalParticipants || 1,
-      bookedDate,
-      bookedStartTime,
-      bookedEndTime,
-      bookedLocation,
-    });
+    // Save to Supabase (unless this is an email-only request)
+    if (!emailOnly) {
+      await addRegistration({
+        parentName,
+        email,
+        phone,
+        kids,
+        type,
+        sessionDetails,
+        totalParticipants: totalParticipants || 1,
+        bookedDate,
+        bookedStartTime,
+        bookedEndTime,
+        bookedLocation,
+      });
+    }
 
-    // Send emails to Artemi + confirmation to parent
-    await sendRegistrationNotification({
-      parentName,
-      email,
-      phone,
-      kids,
-      type,
-      sessionDetails,
-      totalParticipants: totalParticipants || 1,
-    });
+    // Send emails (unless this registration should skip email)
+    if (!skipEmail) {
+      await sendRegistrationNotification({
+        parentName,
+        email,
+        phone,
+        kids,
+        type,
+        sessionDetails,
+        totalParticipants: totalParticipants || 1,
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

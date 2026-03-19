@@ -197,6 +197,9 @@ export default function Home() {
   const [phone, setPhone] = useState("");
   const [kids, setKids] = useState([{ name: "", dob: "", grade: "" }]);
   const [isGroupRate, setIsGroupRate] = useState(false);
+  const [recurringWeeks, setRecurringWeeks] = useState<
+    { date: string; startTime: string; endTime: string; location: string; selected: boolean }[]
+  >([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<{
     success: boolean;
@@ -300,15 +303,42 @@ export default function Home() {
       duration: Math.min(60, window.endMins - window.startMins),
     };
     const endMins = sel.start + sel.duration;
-    const details = `Private Session — ${window.date} ${formatTimeFromMins(sel.start)}-${formatTimeFromMins(endMins)} (${sel.duration} min) at ${window.location}`;
+    const startLabel = formatTimeFromMins(sel.start);
+    const endLabel = formatTimeFromMins(endMins);
+    const details = `Private Session — ${window.date} ${startLabel}-${endLabel} (${sel.duration} min) at ${window.location}`;
+
+    // Find future weeks with matching day, location, and time availability
+    const selectedDate = new Date(window.date);
+    const dayOfWeek = selectedDate.getUTCDay();
+    const futureWeeks: typeof recurringWeeks = [];
+
+    for (const w of timeWindows) {
+      if (w.date === window.date) continue; // skip current
+      if (w.location !== window.location) continue;
+      const wDate = new Date(w.date);
+      if (wDate.getUTCDay() !== dayOfWeek) continue;
+      if (wDate <= selectedDate) continue;
+      // Check if the selected time range fits in this window
+      if (sel.start >= w.startMins && endMins <= w.endMins) {
+        futureWeeks.push({
+          date: w.date,
+          startTime: startLabel,
+          endTime: endLabel,
+          location: w.location,
+          selected: false,
+        });
+      }
+    }
+
+    setRecurringWeeks(futureWeeks);
     setModal({
       open: true,
       type: "private",
       sessionIndex: windowIdx,
       sessionDetails: details,
       bookedDate: window.date,
-      bookedStartTime: formatTimeFromMins(sel.start),
-      bookedEndTime: formatTimeFromMins(endMins),
+      bookedStartTime: startLabel,
+      bookedEndTime: endLabel,
       bookedLocation: window.location,
     });
     setSubmitResult(null);
@@ -360,38 +390,83 @@ export default function Home() {
     const kidsStr = kids.map((k) => `${k.name} (DOB: ${k.dob}, Grade: ${k.grade})`).join(", ");
 
     try {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          parentName,
-          email,
-          phone,
-          kids: kidsStr,
-          type: bookingType,
-          sessionDetails: modal.sessionDetails,
-          sessionIndex: modal.sessionIndex,
-          totalParticipants,
-          bookedDate: modal.bookedDate,
-          bookedStartTime: modal.bookedStartTime,
-          bookedEndTime: modal.bookedEndTime,
-          bookedLocation: modal.bookedLocation,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSubmitResult({
-          success: true,
-          message: "Registration confirmed! Check your email for details.",
+      // Build list of all dates to book (primary + selected recurring)
+      const datesToBook = [
+        {
+          date: modal.bookedDate,
+          startTime: modal.bookedStartTime,
+          endTime: modal.bookedEndTime,
+          location: modal.bookedLocation,
+        },
+        ...recurringWeeks.filter((w) => w.selected).map((w) => ({
+          date: w.date,
+          startTime: w.startTime,
+          endTime: w.endTime,
+          location: w.location,
+        })),
+      ];
+
+      const allDatesLabel = datesToBook.map((d) => d.date).join(", ");
+      const sessionDetailsAll =
+        datesToBook.length > 1
+          ? `${modal.sessionDetails} + recurring (${allDatesLabel})`
+          : modal.sessionDetails;
+
+      // Register each date
+      for (const booking of datesToBook) {
+        await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            parentName,
+            email,
+            phone,
+            kids: kidsStr,
+            type: bookingType,
+            sessionDetails: datesToBook.length > 1
+              ? `Private Session — ${booking.date} ${booking.startTime}-${booking.endTime} at ${booking.location}`
+              : modal.sessionDetails,
+            sessionIndex: modal.sessionIndex,
+            totalParticipants,
+            bookedDate: booking.date,
+            bookedStartTime: booking.startTime,
+            bookedEndTime: booking.endTime,
+            bookedLocation: booking.location,
+            skipEmail: booking !== datesToBook[0], // only send email for first booking
+          }),
         });
-        const fresh = await fetch("/api/schedule").then((r) => r.json());
-        setSchedule(fresh.weeklySchedule || []);
-        setCamps(fresh.camps || []);
-        setPrivateSlots(fresh.privateSlots || []);
-        setBookedSlots(fresh.bookedSlots || []);
-      } else {
-        setSubmitResult({ success: false, message: data.error });
       }
+
+      // Send one summary email if recurring
+      if (datesToBook.length > 1) {
+        await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            parentName,
+            email,
+            phone,
+            kids: kidsStr,
+            type: bookingType,
+            sessionDetails: sessionDetailsAll,
+            sessionIndex: modal.sessionIndex,
+            totalParticipants,
+            emailOnly: true,
+          }),
+        });
+      }
+
+      setSubmitResult({
+        success: true,
+        message: datesToBook.length > 1
+          ? `${datesToBook.length} sessions booked! Check your email for details.`
+          : "Registration confirmed! Check your email for details.",
+      });
+      const fresh = await fetch("/api/schedule").then((r) => r.json());
+      setSchedule(fresh.weeklySchedule || []);
+      setCamps(fresh.camps || []);
+      setPrivateSlots(fresh.privateSlots || []);
+      setBookedSlots(fresh.bookedSlots || []);
     } catch {
       setSubmitResult({
         success: false,
@@ -837,6 +912,39 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
+
+                {(modal.type === "private" || modal.type === "group-private") && recurringWeeks.length > 0 && (
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-brown-300">
+                      Repeat weekly? (same time &amp; location)
+                    </label>
+                    <div className="space-y-2 rounded-lg border border-brown-700 bg-brown-800/50 p-3">
+                      {recurringWeeks.map((week, wi) => {
+                        const d = new Date(week.date);
+                        const dayName = d.toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
+                        return (
+                          <label key={wi} className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={week.selected}
+                              onChange={() =>
+                                setRecurringWeeks((prev) =>
+                                  prev.map((w, i) =>
+                                    i === wi ? { ...w, selected: !w.selected } : w
+                                  )
+                                )
+                              }
+                              className="rounded border-brown-600 accent-mesa-accent"
+                            />
+                            <span className="text-brown-300">
+                              {dayName}, {week.date}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {(modal.type === "private" || modal.type === "group-private") && (
                   <div className="flex items-center gap-3">
