@@ -1,10 +1,11 @@
 export interface WeeklySession {
   group: string;
-  day: string;
+  date: string;
   startTime: string;
   endTime: string;
   location: string;
   maxSpots: number;
+  price: number;
 }
 
 export interface Camp {
@@ -58,11 +59,12 @@ export async function getWeeklySchedule(): Promise<WeeklySession[]> {
   // Skip header row
   return rows.slice(1).map((row) => ({
     group: row[0] || "",
-    day: row[1] || "",
+    date: row[1] || "",
     startTime: row[2] || "",
     endTime: row[3] || "",
     location: row[4] || "",
-    maxSpots: parseInt(row[5]) || 12,
+    maxSpots: parseInt(row[5]) || 6,
+    price: parseInt(row[6]) || 50,
   }));
 }
 

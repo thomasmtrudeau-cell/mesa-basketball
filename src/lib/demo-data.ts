@@ -1,25 +1,37 @@
 import type { WeeklySession, Camp, PrivateSlot } from "./sheets";
 
 export const demoWeeklySchedule: WeeklySession[] = [
-  { group: "Junior Boys & Girls — Grade 5 & Below", day: "Monday", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 12 },
-  { group: "Junior Boys & Girls — Grade 5 & Below", day: "Wednesday", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 12 },
-  { group: "Junior Boys & Girls — Grade 5 & Below", day: "Saturday", startTime: "9:00 AM", endTime: "10:00 AM", location: "St. Pauls", maxSpots: 12 },
+  { group: "Junior Boys & Girls — Grade 5 & Below", date: "March 24, 2026", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Junior Boys & Girls — Grade 5 & Below", date: "March 26, 2026", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Junior Boys & Girls — Grade 5 & Below", date: "March 28, 2026", startTime: "9:00 AM", endTime: "10:00 AM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Junior Boys & Girls — Grade 5 & Below", date: "March 31, 2026", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Junior Boys & Girls — Grade 5 & Below", date: "April 2, 2026", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Junior Boys & Girls — Grade 5 & Below", date: "April 4, 2026", startTime: "9:00 AM", endTime: "10:00 AM", location: "St. Pauls", maxSpots: 6, price: 50 },
 
-  { group: "Middle School Boys — Grades 5-8", day: "Monday", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 12 },
-  { group: "Middle School Boys — Grades 5-8", day: "Wednesday", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 12 },
-  { group: "Middle School Boys — Grades 5-8", day: "Saturday", startTime: "10:00 AM", endTime: "11:00 AM", location: "St. Pauls", maxSpots: 12 },
+  { group: "Middle School Boys — Grades 5-8", date: "March 24, 2026", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Middle School Boys — Grades 5-8", date: "March 26, 2026", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Middle School Boys — Grades 5-8", date: "March 28, 2026", startTime: "10:00 AM", endTime: "11:00 AM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Middle School Boys — Grades 5-8", date: "March 31, 2026", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Middle School Boys — Grades 5-8", date: "April 2, 2026", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Middle School Boys — Grades 5-8", date: "April 4, 2026", startTime: "10:00 AM", endTime: "11:00 AM", location: "St. Pauls", maxSpots: 6, price: 50 },
 
-  { group: "Middle School Girls — Grades 5-8", day: "Monday", startTime: "7:00 PM", endTime: "8:00 PM", location: "St. Pauls", maxSpots: 12 },
-  { group: "Middle School Girls — Grades 5-8", day: "Wednesday", startTime: "7:00 PM", endTime: "8:00 PM", location: "St. Pauls", maxSpots: 12 },
-  { group: "Middle School Girls — Grades 5-8", day: "Saturday", startTime: "11:00 AM", endTime: "12:00 PM", location: "St. Pauls", maxSpots: 12 },
+  { group: "Middle School Girls — Grades 5-8", date: "March 24, 2026", startTime: "7:00 PM", endTime: "8:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Middle School Girls — Grades 5-8", date: "March 26, 2026", startTime: "7:00 PM", endTime: "8:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Middle School Girls — Grades 5-8", date: "March 28, 2026", startTime: "11:00 AM", endTime: "12:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Middle School Girls — Grades 5-8", date: "March 31, 2026", startTime: "7:00 PM", endTime: "8:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "Middle School Girls — Grades 5-8", date: "April 2, 2026", startTime: "7:00 PM", endTime: "8:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
 
-  { group: "High School Girls — Grades 9-12", day: "Tuesday", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 12 },
-  { group: "High School Girls — Grades 9-12", day: "Friday", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 12 },
-  { group: "High School Girls — Grades 9-12", day: "Sunday", startTime: "2:30 PM", endTime: "3:30 PM", location: "Cherry Valley", maxSpots: 12 },
+  { group: "High School Girls — Grades 9-12", date: "March 24, 2026", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "High School Girls — Grades 9-12", date: "March 27, 2026", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "High School Girls — Grades 9-12", date: "March 29, 2026", startTime: "2:30 PM", endTime: "3:30 PM", location: "Cherry Valley", maxSpots: 6, price: 50 },
+  { group: "High School Girls — Grades 9-12", date: "March 31, 2026", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "High School Girls — Grades 9-12", date: "April 3, 2026", startTime: "5:00 PM", endTime: "6:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
 
-  { group: "High School Boys — Grades 9-12", day: "Tuesday", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 12 },
-  { group: "High School Boys — Grades 9-12", day: "Friday", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 12 },
-  { group: "High School Boys — Grades 9-12", day: "Sunday", startTime: "3:30 PM", endTime: "4:30 PM", location: "Cherry Valley", maxSpots: 12 },
+  { group: "High School Boys — Grades 9-12", date: "March 24, 2026", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "High School Boys — Grades 9-12", date: "March 27, 2026", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "High School Boys — Grades 9-12", date: "March 29, 2026", startTime: "3:30 PM", endTime: "4:30 PM", location: "Cherry Valley", maxSpots: 6, price: 50 },
+  { group: "High School Boys — Grades 9-12", date: "March 31, 2026", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
+  { group: "High School Boys — Grades 9-12", date: "April 3, 2026", startTime: "6:00 PM", endTime: "7:00 PM", location: "St. Pauls", maxSpots: 6, price: 50 },
 ];
 
 export const demoCamps: Camp[] = [

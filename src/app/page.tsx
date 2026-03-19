@@ -25,11 +25,12 @@ function LocationLink({ location, className }: { location: string; className?: s
 
 interface WeeklySession {
   group: string;
-  day: string;
+  date: string;
   startTime: string;
   endTime: string;
   location: string;
   maxSpots: number;
+  price: number;
 }
 
 interface Camp {
@@ -87,6 +88,16 @@ function formatPrice(amount: number): string {
   return amount % 1 === 0 ? `$${amount}` : `$${amount.toFixed(2)}`;
 }
 
+interface SelectedGroupSession {
+  date: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  group: string;
+  maxSpots: number;
+  price: number;
+}
+
 interface BookingModal {
   open: boolean;
   type: BookingType;
@@ -99,6 +110,10 @@ interface BookingModal {
   selectedDuration?: number;
   windowTotalMins?: number;
   remainingAfterSelection?: number;
+  // Weekly multi-session
+  selectedGroupSessions?: SelectedGroupSession[];
+  weeklyTotalPrice?: number;
+  weeklySavings?: number;
 }
 
 // Group weekly sessions by group name
@@ -217,8 +232,13 @@ export default function Home() {
   const [bookedSlots, setBookedSlots] = useState<
     { date: string; startTime: string; endTime: string; location: string }[]
   >([]);
+  const [groupEnrollment, setGroupEnrollment] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Group session selection state: key = "group|date|startTime"
+  const [selectedGroupKeys, setSelectedGroupKeys] = useState<Set<string>>(new Set());
+  const [activeGroup, setActiveGroup] = useState<string>("");
 
   // Per-window booking state: windowIndex → { start, duration }
   const [windowSelections, setWindowSelections] = useState<
@@ -271,6 +291,7 @@ export default function Home() {
           setCamps(data.camps || []);
           setPrivateSlots(data.privateSlots || []);
           setBookedSlots(data.bookedSlots || []);
+          setGroupEnrollment(data.groupEnrollment || {});
         }
       })
       .catch(() => setError("Failed to load schedule"))
@@ -451,6 +472,45 @@ export default function Home() {
     const kidsStr = kids.map((k) => `${k.name} (DOB: ${k.dob}, Grade: ${k.grade})`).join(", ");
 
     try {
+      // Weekly multi-session registration
+      if (bookingType === "weekly" && modal.selectedGroupSessions && modal.selectedGroupSessions.length > 0) {
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            parentName,
+            email,
+            phone,
+            kids: kidsStr,
+            type: "weekly",
+            sessionDetails: modal.sessionDetails,
+            totalParticipants,
+            weeklySessions: modal.selectedGroupSessions,
+            weeklyTotalPrice: modal.weeklyTotalPrice,
+          }),
+        });
+        const result = await res.json();
+        if (!res.ok) {
+          setSubmitResult({ success: false, message: result.error || "Registration failed." });
+          setSubmitting(false);
+          return;
+        }
+        setSubmitResult({
+          success: true,
+          message: `${modal.selectedGroupSessions.length} sessions booked! Check your email for details.`,
+        });
+        // Clear selections
+        setSelectedGroupKeys(new Set());
+        const fresh = await fetch("/api/schedule").then((r) => r.json());
+        setSchedule(fresh.weeklySchedule || []);
+        setCamps(fresh.camps || []);
+        setPrivateSlots(fresh.privateSlots || []);
+        setBookedSlots(fresh.bookedSlots || []);
+        setGroupEnrollment(fresh.groupEnrollment || {});
+        setSubmitting(false);
+        return;
+      }
+
       // Adjust end time if upsell was accepted
       let adjustedEndTime = modal.bookedEndTime;
       if (upsellExtra > 0 && modal.bookedEndTime) {
@@ -474,12 +534,6 @@ export default function Home() {
         })),
       ];
 
-      const allDatesLabel = datesToBook.map((d) => d.date).join(", ");
-      const sessionDetailsAll =
-        datesToBook.length > 1
-          ? `${modal.sessionDetails} + recurring (${allDatesLabel})`
-          : modal.sessionDetails;
-
       // Register each date (skip emails for all — we'll send one consolidated email)
       const isRecurring = datesToBook.length > 1;
       for (const booking of datesToBook) {
@@ -499,7 +553,7 @@ export default function Home() {
             bookedStartTime: booking.startTime,
             bookedEndTime: booking.endTime,
             bookedLocation: booking.location,
-            skipEmail: isRecurring, // skip individual emails if recurring
+            skipEmail: isRecurring,
             submittedReferralCode: referralCode.trim() || undefined,
           }),
         });
@@ -539,6 +593,7 @@ export default function Home() {
       setCamps(fresh.camps || []);
       setPrivateSlots(fresh.privateSlots || []);
       setBookedSlots(fresh.bookedSlots || []);
+      setGroupEnrollment(fresh.groupEnrollment || {});
     } catch {
       setSubmitResult({
         success: false,
@@ -615,6 +670,113 @@ export default function Home() {
   }, [timeWindows]);
 
   const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  // --- Group session helpers ---
+  function getGroupSessionKey(s: WeeklySession): string {
+    return `${s.group}|${s.date}|${s.startTime}`;
+  }
+
+  function getEnrollmentCount(s: WeeklySession): number {
+    const key = `${s.date}|${s.startTime}`;
+    return groupEnrollment[key] || 0;
+  }
+
+  function isFutureSession(s: WeeklySession): boolean {
+    const sessionDate = new Date(s.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return sessionDate >= today;
+  }
+
+  function isSessionFull(s: WeeklySession): boolean {
+    return getEnrollmentCount(s) >= s.maxSpots;
+  }
+
+  function toggleGroupSession(s: WeeklySession) {
+    const key = getGroupSessionKey(s);
+    setSelectedGroupKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }
+
+  // Get selected sessions for the active group
+  const selectedSessionsForActiveGroup = useMemo(() => {
+    return schedule.filter(
+      (s) => s.group === activeGroup && selectedGroupKeys.has(getGroupSessionKey(s))
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schedule, activeGroup, selectedGroupKeys]);
+
+  // Compute group session pricing
+  const groupPricing = useMemo(() => {
+    const sessions = selectedSessionsForActiveGroup;
+    const count = sessions.length;
+    if (count === 0) return { count: 0, unitPrice: 0, totalPrice: 0, savings: 0, discountLabel: "" };
+
+    const basePrice = sessions[0]?.price || 50;
+    let discountPct = 0;
+    let discountLabel = "";
+
+    if (count >= 8) {
+      discountPct = 0.15;
+      discountLabel = "15% off (8+ sessions)";
+    } else if (count >= 4) {
+      discountPct = 0.10;
+      discountLabel = "10% off (4-7 sessions)";
+    }
+
+    const unitPrice = Math.round(basePrice * (1 - discountPct) * 100) / 100;
+    const totalPrice = Math.round(unitPrice * count * 100) / 100;
+    const fullTotal = basePrice * count;
+    const savings = Math.round((fullTotal - totalPrice) * 100) / 100;
+
+    return { count, unitPrice, totalPrice, savings, discountLabel, basePrice };
+  }, [selectedSessionsForActiveGroup]);
+
+  function openGroupRegistration() {
+    const sessions = selectedSessionsForActiveGroup;
+    if (sessions.length < 2) return;
+
+    const sessionList = sessions
+      .map((s) => {
+        const d = new Date(s.date);
+        const dayName = d.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" });
+        return `${dayName} ${s.date} ${s.startTime}-${s.endTime}`;
+      })
+      .join(", ");
+
+    setModal({
+      open: true,
+      type: "weekly",
+      sessionIndex: 0,
+      sessionDetails: `${activeGroup} — ${sessions.length} sessions`,
+      selectedGroupSessions: sessions.map((s) => ({
+        date: s.date,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        location: s.location,
+        group: s.group,
+        maxSpots: s.maxSpots,
+        price: s.price,
+      })),
+      weeklyTotalPrice: groupPricing.totalPrice,
+      weeklySavings: groupPricing.savings,
+    });
+    setSubmitResult(null);
+    setParentName("");
+    setEmail("");
+    setPhone("");
+    setKids([{ name: "", dob: "", grade: "" }]);
+    setIsGroupRate(false);
+    setUpsellExtra(0);
+    setReferralCode("");
+  }
 
   const grouped = groupByGroup(schedule);
 
@@ -727,39 +889,152 @@ export default function Home() {
       {/* Weekly Schedule */}
       <section id="schedule" className="py-16">
         <div className="mx-auto max-w-5xl px-6">
-          <h2 className="text-center text-3xl font-bold">Weekly Schedule</h2>
+          <h2 className="text-center text-3xl font-bold">Group Sessions</h2>
           <p className="mt-2 text-center text-brown-400">
-            Group training sessions — spots are limited to 12 per session
+            Select 2+ sessions to register — volume discounts available
           </p>
+          <div className="mt-2 flex flex-wrap justify-center gap-4 text-xs text-brown-500">
+            <span>1-3 sessions: $50 each</span>
+            <span className="text-brown-600">|</span>
+            <span>4-7 sessions: <span className="text-green-400/80">10% off</span></span>
+            <span className="text-brown-600">|</span>
+            <span>8+ sessions: <span className="text-green-400/80">15% off</span></span>
+          </div>
 
           {loading && <p className="mt-8 text-center text-brown-400">Loading schedule...</p>}
           {error && <p className="mt-8 text-center text-red-400">{error}</p>}
 
           <div className="mt-8 grid gap-6 md:grid-cols-2">
-            {Object.entries(grouped).map(([group, sessions]) => (
-              <div key={group} className="rounded-xl border border-brown-700 bg-brown-900/40 p-6">
-                <h3 className="mb-4 text-lg font-bold text-mesa-accent">{group}</h3>
-                <div className="space-y-3">
-                  {sessions.map((s, i) => {
-                    const globalIndex = schedule.indexOf(s);
-                    return (
-                      <div key={i} className="flex items-center justify-between rounded-lg bg-brown-800/50 px-4 py-3">
-                        <div>
-                          <p className="font-medium">{s.day} {s.startTime} - {s.endTime}</p>
-                          <p className="text-sm text-brown-400"><LocationLink location={s.location} /></p>
+            {Object.entries(grouped).map(([group, sessions]) => {
+              const futureSessions = sessions.filter(isFutureSession);
+              if (futureSessions.length === 0) return null;
+              const isActive = activeGroup === group;
+              const selectedCount = futureSessions.filter(
+                (s) => selectedGroupKeys.has(getGroupSessionKey(s))
+              ).length;
+
+              return (
+                <div
+                  key={group}
+                  className={`rounded-xl border p-6 transition cursor-pointer ${
+                    isActive
+                      ? "border-mesa-accent bg-brown-900/60"
+                      : "border-brown-700 bg-brown-900/40 hover:border-brown-500"
+                  }`}
+                  onClick={() => {
+                    setActiveGroup(isActive ? "" : group);
+                    if (!isActive) {
+                      // Clear selections from other groups
+                      setSelectedGroupKeys(new Set());
+                    }
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-mesa-accent">{group}</h3>
+                    {selectedCount > 0 && (
+                      <span className="rounded-full bg-mesa-accent/20 px-2 py-0.5 text-xs font-semibold text-mesa-accent">
+                        {selectedCount} selected
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-sm text-brown-500">
+                    {futureSessions.length} upcoming session{futureSessions.length !== 1 ? "s" : ""} &bull; {futureSessions[0].maxSpots} spots max
+                  </p>
+
+                  {isActive && (
+                    <div className="mt-4 space-y-2" onClick={(e) => e.stopPropagation()}>
+                      {futureSessions.map((s) => {
+                        const key = getGroupSessionKey(s);
+                        const enrolled = getEnrollmentCount(s);
+                        const spotsLeft = s.maxSpots - enrolled;
+                        const full = spotsLeft <= 0;
+                        const checked = selectedGroupKeys.has(key);
+                        const d = new Date(s.date);
+                        const dayName = d.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" });
+
+                        return (
+                          <label
+                            key={key}
+                            className={`flex items-center gap-3 rounded-lg px-4 py-3 transition ${
+                              full
+                                ? "bg-brown-800/30 opacity-50 cursor-not-allowed"
+                                : checked
+                                  ? "bg-mesa-accent/10 border border-mesa-accent/30"
+                                  : "bg-brown-800/50 hover:bg-brown-800/70 cursor-pointer"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              disabled={full}
+                              onChange={() => toggleGroupSession(s)}
+                              className="rounded border-brown-600 accent-mesa-accent h-4 w-4"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm">
+                                {dayName}, {s.date}
+                              </p>
+                              <p className="text-xs text-brown-400">
+                                {s.startTime} - {s.endTime} &bull; <LocationLink location={s.location} />
+                              </p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className={`text-xs font-medium ${
+                                full ? "text-red-400" : spotsLeft <= 2 ? "text-yellow-400" : "text-green-400"
+                              }`}>
+                                {full ? "FULL" : `${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""}`}
+                              </span>
+                            </div>
+                          </label>
+                        );
+                      })}
+
+                      {/* Pricing summary and register button */}
+                      {groupPricing.count > 0 && (
+                        <div className="mt-4 rounded-lg border border-brown-700 bg-brown-800/60 p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-semibold text-white">
+                                {groupPricing.count} session{groupPricing.count !== 1 ? "s" : ""} &times; ${groupPricing.unitPrice}
+                                {" = "}
+                                <span className="text-mesa-accent">${groupPricing.totalPrice}</span>
+                              </p>
+                              {groupPricing.savings > 0 && (
+                                <p className="text-xs text-green-400 mt-0.5">
+                                  {groupPricing.discountLabel} — You save ${groupPricing.savings}!
+                                </p>
+                              )}
+                              {groupPricing.count < 2 && (
+                                <p className="text-xs text-yellow-400/80 mt-0.5">
+                                  Select at least 2 sessions to register
+                                </p>
+                              )}
+                              {groupPricing.count >= 2 && groupPricing.count < 4 && (
+                                <p className="text-xs text-brown-500 mt-0.5">
+                                  Add {4 - groupPricing.count} more for 10% off
+                                </p>
+                              )}
+                              {groupPricing.count >= 4 && groupPricing.count < 8 && (
+                                <p className="text-xs text-brown-500 mt-0.5">
+                                  Add {8 - groupPricing.count} more for 15% off
+                                </p>
+                              )}
+                            </div>
+                            <button
+                              onClick={openGroupRegistration}
+                              disabled={groupPricing.count < 2}
+                              className="rounded bg-mesa-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                              Register
+                            </button>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => openModal("weekly", globalIndex, `${group} — ${s.day} ${s.startTime}-${s.endTime} at ${s.location}`)}
-                          className="rounded bg-mesa-accent px-3 py-1 text-xs font-semibold text-white transition hover:bg-amber-600"
-                        >
-                          Register
-                        </button>
-                      </div>
-                    );
-                  })}
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -1017,13 +1292,13 @@ export default function Home() {
       {/* Registration Modal */}
       {modal.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-brown-900 p-6 shadow-2xl">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-brown-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold">
                 {modal.type === "camp"
                   ? "Camp Registration"
                   : modal.type === "weekly"
-                    ? "Session Registration"
+                    ? "Group Session Registration"
                     : "Book Private Session"}
               </h3>
               <button onClick={closeModal} className="text-2xl text-brown-400 hover:text-white">
@@ -1031,6 +1306,35 @@ export default function Home() {
               </button>
             </div>
             <p className="mt-1 text-sm text-brown-400">{modal.sessionDetails}</p>
+
+            {/* Weekly sessions list */}
+            {modal.type === "weekly" && modal.selectedGroupSessions && modal.selectedGroupSessions.length > 0 && !submitResult?.success && (
+              <div className="mt-3 rounded-lg border border-brown-700 bg-brown-800/50 p-3">
+                <p className="text-xs font-semibold text-brown-300 mb-2">Selected dates:</p>
+                <div className="space-y-1">
+                  {modal.selectedGroupSessions.map((s, i) => {
+                    const d = new Date(s.date);
+                    const dayName = d.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" });
+                    return (
+                      <p key={i} className="text-xs text-brown-400">
+                        {dayName}, {s.date} &bull; {s.startTime}-{s.endTime} &bull; {s.location}
+                      </p>
+                    );
+                  })}
+                </div>
+                <div className="mt-3 border-t border-brown-700 pt-2">
+                  <p className="text-sm font-semibold text-mesa-accent">
+                    Total: ${modal.weeklyTotalPrice}
+                    {modal.weeklySavings && modal.weeklySavings > 0 ? (
+                      <span className="ml-2 text-xs text-green-400">
+                        (You save ${modal.weeklySavings}!)
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="text-xs text-brown-500 mt-0.5">Payment in person — Cash, Venmo, or Zelle</p>
+                </div>
+              </div>
+            )}
 
             {submitResult?.success ? (
               <div className="mt-6 rounded-lg bg-green-900/50 p-4 text-center">

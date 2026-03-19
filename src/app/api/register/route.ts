@@ -7,6 +7,7 @@ import {
   addReferralCredit,
   findReferrerByCode,
   generateReferralCode,
+  checkGroupSessionCapacity,
 } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
@@ -27,6 +28,9 @@ export async function POST(req: NextRequest) {
       skipEmail,
       emailOnly,
       submittedReferralCode,
+      // Weekly multi-session fields
+      weeklySessions,
+      weeklyTotalPrice,
     } = body;
 
     if (!parentName || !email || !phone || !kids || !type || !sessionDetails) {
@@ -34,6 +38,71 @@ export async function POST(req: NextRequest) {
         { error: "Missing required fields" },
         { status: 400 }
       );
+    }
+
+    // Handle weekly multi-session registration
+    if (type === "weekly" && weeklySessions && weeklySessions.length > 0) {
+      const referralCode = generateReferralCode(parentName);
+
+      // Check capacity for all selected sessions
+      const capacityChecks = await Promise.all(
+        weeklySessions.map((s: { date: string; startTime: string; endTime: string; location: string; group: string; maxSpots: number }) =>
+          checkGroupSessionCapacity(s.date, s.startTime, s.maxSpots)
+        )
+      );
+
+      const fullSessions = weeklySessions.filter(
+        (_: unknown, i: number) => !capacityChecks[i].available
+      );
+      if (fullSessions.length > 0) {
+        const fullDates = fullSessions.map((s: { date: string }) => s.date).join(", ");
+        return NextResponse.json(
+          { error: `The following sessions are full: ${fullDates}. Please deselect them and try again.` },
+          { status: 400 }
+        );
+      }
+
+      // Create one registration row per selected session
+      for (const session of weeklySessions) {
+        await addRegistrationWithRewards({
+          parentName,
+          email,
+          phone,
+          kids,
+          type: "weekly",
+          sessionDetails: `${session.group} — ${session.date} ${session.startTime}-${session.endTime} at ${session.location}`,
+          totalParticipants: totalParticipants || 1,
+          bookedDate: session.date,
+          bookedStartTime: session.startTime,
+          bookedEndTime: session.endTime,
+          bookedLocation: session.location,
+          referralCode,
+          isFree: false,
+        });
+      }
+
+      // Send ONE consolidated email
+      const allSessionsList = weeklySessions
+        .map((s: { date: string; startTime: string; endTime: string; location: string }) =>
+          `${s.date} ${s.startTime}-${s.endTime} at ${s.location}`
+        )
+        .join("<br/>");
+
+      const priceNote = weeklyTotalPrice
+        ? `<p><strong>Total:</strong> $${weeklyTotalPrice}</p>`
+        : "";
+
+      await sendRegistrationNotification({
+        parentName,
+        email,
+        phone,
+        kids,
+        type: "weekly",
+        sessionDetails: `Group Sessions (${weeklySessions.length} dates):<br/>${allSessionsList}${priceNote ? "<br/>" + priceNote : ""}`,
+        totalParticipants: totalParticipants || 1,
+      });
+
+      return NextResponse.json({ success: true, count: weeklySessions.length });
     }
 
     const isPrivateType = type === "private" || type === "group-private";
@@ -47,11 +116,7 @@ export async function POST(req: NextRequest) {
       if (isPrivateType) {
         const sessionCount = await getConfirmedSessionCount(email);
         const credits = await getReferralCredits(email);
-        // "Effective" sessions = paid sessions + referral credits
-        // Free session triggers every 11th effective session (i.e., after 10 paid-equivalent)
         const effectiveCount = sessionCount + credits;
-        // The NEXT session (the one being booked now) will be number effectiveCount + 1
-        // It's free if (effectiveCount + 1) is a multiple of 11 (i.e., the 11th, 22nd, etc.)
         if ((effectiveCount + 1) % 11 === 0 && effectiveCount + 1 >= 11) {
           isFree = true;
         }
@@ -75,13 +140,11 @@ export async function POST(req: NextRequest) {
       manageToken = result.manageToken;
 
       // Handle referral: if a new family used a valid referral code
-      // After the insert above, a truly new family will have exactly 1 confirmed session
       if (submittedReferralCode && isPrivateType) {
         const currentCount = await getConfirmedSessionCount(email);
         if (currentCount <= 1) {
           const referrerEmail = await findReferrerByCode(submittedReferralCode);
           if (referrerEmail && referrerEmail !== email) {
-            // Credit both the referrer and the new family
             await addReferralCredit(referrerEmail);
             await addReferralCredit(email);
           }

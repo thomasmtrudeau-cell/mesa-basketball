@@ -46,9 +46,11 @@ export async function sendRegistrationNotification(data: {
   const typeLabel =
     data.type === "camp"
       ? "Camp Registration"
-      : data.type === "private"
-        ? "Private Session Booking"
-        : "Group Private Session Booking";
+      : data.type === "weekly"
+        ? "Group Session Registration"
+        : data.type === "private"
+          ? "Private Session Booking"
+          : "Group Private Session Booking";
 
   const manageLink = data.manageToken
     ? `${BASE_URL}/booking/${data.manageToken}`

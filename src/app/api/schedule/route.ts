@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getWeeklySchedule, getCamps, getPrivateSlots } from "@/lib/sheets";
-import { getBookedSlots } from "@/lib/supabase";
+import { getBookedSlots, getGroupSessionEnrollment } from "@/lib/supabase";
 
 function safeGetBookedSlots() {
   try {
@@ -9,6 +9,15 @@ function safeGetBookedSlots() {
     return Promise.resolve([]);
   }
 }
+
+function safeGetGroupEnrollment() {
+  try {
+    return getGroupSessionEnrollment();
+  } catch {
+    return Promise.resolve({});
+  }
+}
+
 import {
   demoWeeklySchedule,
   demoCamps,
@@ -29,17 +38,19 @@ export async function GET() {
       camps: demoCamps,
       privateSlots: demoPrivateSlots,
       bookedSlots: [],
+      groupEnrollment: {},
       demo: true,
     });
   }
 
   try {
-    const [weeklySchedule, camps, privateSlots, bookedSlots] =
+    const [weeklySchedule, camps, privateSlots, bookedSlots, groupEnrollment] =
       await Promise.all([
         getWeeklySchedule(),
         getCamps(),
         getPrivateSlots(),
         safeGetBookedSlots().catch(() => []),
+        safeGetGroupEnrollment().catch(() => ({})),
       ]);
 
     return NextResponse.json({
@@ -47,6 +58,7 @@ export async function GET() {
       camps,
       privateSlots: privateSlots.filter((s) => s.available),
       bookedSlots,
+      groupEnrollment,
     });
   } catch (error) {
     console.error("Error fetching schedule:", error);
@@ -55,6 +67,7 @@ export async function GET() {
       camps: demoCamps,
       privateSlots: demoPrivateSlots,
       bookedSlots: [],
+      groupEnrollment: {},
       demo: true,
     });
   }

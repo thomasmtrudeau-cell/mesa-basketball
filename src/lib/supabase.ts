@@ -241,3 +241,44 @@ export async function addRegistrationWithRewards(data: {
   if (error) throw error;
   return { manageToken: row.manage_token };
 }
+
+/** Count confirmed weekly registrations per session (by date + start time) */
+export async function getGroupSessionEnrollment(): Promise<
+  Record<string, number>
+> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("registrations")
+    .select("booked_date, booked_start_time")
+    .eq("type", "weekly")
+    .eq("status", "confirmed")
+    .not("booked_date", "is", null);
+
+  if (error || !data) return {};
+
+  const counts: Record<string, number> = {};
+  for (const row of data) {
+    const key = `${row.booked_date}|${row.booked_start_time}`;
+    counts[key] = (counts[key] || 0) + 1;
+  }
+  return counts;
+}
+
+/** Check if a specific group session has capacity */
+export async function checkGroupSessionCapacity(
+  date: string,
+  startTime: string,
+  maxSpots: number
+): Promise<{ available: boolean; enrolled: number }> {
+  const supabase = getSupabase();
+  const { count, error } = await supabase
+    .from("registrations")
+    .select("*", { count: "exact", head: true })
+    .eq("type", "weekly")
+    .eq("status", "confirmed")
+    .eq("booked_date", date)
+    .eq("booked_start_time", startTime);
+
+  const enrolled = error ? 0 : count || 0;
+  return { available: enrolled < maxSpots, enrolled };
+}
