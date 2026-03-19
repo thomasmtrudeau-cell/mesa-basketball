@@ -1333,6 +1333,28 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Sticky group session registration bar */}
+      {groupPricing.count >= 2 && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-brown-700 bg-brown-900 px-6 py-3 shadow-2xl">
+          <div className="mx-auto flex max-w-5xl items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-white">
+                {groupPricing.count} sessions &times; ${groupPricing.unitPrice} = <span className="text-mesa-accent">${groupPricing.totalPrice}</span>
+              </p>
+              {groupPricing.savings > 0 && (
+                <p className="text-xs text-green-400">{groupPricing.discountLabel} — You save ${groupPricing.savings}!</p>
+              )}
+            </div>
+            <button
+              onClick={openGroupRegistration}
+              className="rounded bg-mesa-accent px-5 py-2 text-sm font-semibold text-white hover:bg-amber-600"
+            >
+              Register
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Contact Footer */}
       <footer className="border-t border-brown-800 bg-mesa-dark py-12">
         <div className="mx-auto max-w-4xl px-6 text-center">
