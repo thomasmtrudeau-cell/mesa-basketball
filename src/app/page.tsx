@@ -3,6 +3,26 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 
+const LOCATION_LINKS: Record<string, { name: string; url: string }> = {
+  "St. Pauls": { name: "St. Paul's Cathedral", url: "https://share.google/kgiqMxAj2iAFEAGI6" },
+  "St. Paul's": { name: "St. Paul's Cathedral", url: "https://share.google/kgiqMxAj2iAFEAGI6" },
+  "St. Paul's Cathedral": { name: "St. Paul's Cathedral", url: "https://share.google/kgiqMxAj2iAFEAGI6" },
+  "Cherry Valley": { name: "Cherry Valley Sports", url: "https://share.google/YKRoCTFuLP33bpSUZ" },
+  "Cherry Valley Sports": { name: "Cherry Valley Sports", url: "https://share.google/YKRoCTFuLP33bpSUZ" },
+};
+
+function LocationLink({ location, className }: { location: string; className?: string }) {
+  const link = LOCATION_LINKS[location];
+  if (link) {
+    return (
+      <a href={link.url} target="_blank" rel="noopener noreferrer" className={`underline hover:text-mesa-accent ${className || ""}`}>
+        {link.name}
+      </a>
+    );
+  }
+  return <span className={className}>{location}</span>;
+}
+
 interface WeeklySession {
   group: string;
   day: string;
@@ -608,7 +628,7 @@ export default function Home() {
                       <div key={i} className="flex items-center justify-between rounded-lg bg-brown-800/50 px-4 py-3">
                         <div>
                           <p className="font-medium">{s.day} {s.startTime} - {s.endTime}</p>
-                          <p className="text-sm text-brown-400">{s.location}</p>
+                          <p className="text-sm text-brown-400"><LocationLink location={s.location} /></p>
                         </div>
                         <button
                           onClick={() => openModal("weekly", globalIndex, `${group} — ${s.day} ${s.startTime}-${s.endTime} at ${s.location}`)}
@@ -653,7 +673,7 @@ export default function Home() {
                       {camp.price}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-brown-400">{camp.time} &bull; {camp.location}</p>
+                  <p className="mt-2 text-sm text-brown-400">{camp.time} &bull; <LocationLink location={camp.location} /></p>
                   {camp.description && <p className="mt-2 text-sm text-brown-300">{camp.description}</p>}
                   <div className="mt-4 flex items-center justify-between">
                     <span className={`text-sm font-medium ${full ? "text-red-400" : spotsLeft <= 5 ? "text-yellow-400" : "text-green-400"}`}>
@@ -726,7 +746,7 @@ export default function Home() {
                         })()}
                       </h3>
                       <p className="text-sm text-brown-500">
-                        {window.location} &bull; Available {window.startLabel} - {window.endLabel} ({totalAvailable} min)
+                        <LocationLink location={window.location} /> &bull; Available {window.startLabel} - {window.endLabel} ({totalAvailable} min)
                       </p>
                     </div>
                   </div>
