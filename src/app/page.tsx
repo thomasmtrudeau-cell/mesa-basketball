@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 
 interface WeeklySession {
@@ -67,6 +67,7 @@ interface BookingModal {
   type: BookingType;
   sessionIndex: number;
   sessionDetails: string;
+  selectedSlotIndices: number[];
 }
 
 // Group weekly sessions by group name for display
@@ -79,18 +80,54 @@ function groupByGroup(sessions: WeeklySession[]) {
   return groups;
 }
 
+// Group private slots by date + location for multi-select
+function groupSlotsByDay(slots: PrivateSlot[]) {
+  const groups: { key: string; date: string; location: string; slots: { slot: PrivateSlot; globalIndex: number }[] }[] = [];
+  const map: Record<string, typeof groups[number]> = {};
+  slots.forEach((slot, i) => {
+    const key = `${slot.date}|${slot.location}`;
+    if (!map[key]) {
+      map[key] = { key, date: slot.date, location: slot.location, slots: [] };
+      groups.push(map[key]);
+    }
+    map[key].slots.push({ slot, globalIndex: i });
+  });
+  return groups;
+}
+
+// Check if selected slots are consecutive (no gaps)
+function areSlotsConsecutive(slots: PrivateSlot[]): boolean {
+  if (slots.length <= 1) return true;
+  const sorted = [...slots].sort((a, b) => parseTime(a.startTime) - parseTime(b.startTime));
+  for (let i = 1; i < sorted.length; i++) {
+    if (parseTime(sorted[i].startTime) !== parseTime(sorted[i - 1].endTime)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getCombinedTimeRange(slots: PrivateSlot[]): { start: string; end: string; duration: number } {
+  const sorted = [...slots].sort((a, b) => parseTime(a.startTime) - parseTime(b.startTime));
+  const start = sorted[0].startTime;
+  const end = sorted[sorted.length - 1].endTime;
+  return { start, end, duration: getSessionDuration(start, end) };
+}
+
 export default function Home() {
   const [schedule, setSchedule] = useState<WeeklySession[]>([]);
   const [camps, setCamps] = useState<Camp[]>([]);
   const [privateSlots, setPrivateSlots] = useState<PrivateSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedSlots, setSelectedSlots] = useState<Set<number>>(new Set());
 
   const [modal, setModal] = useState<BookingModal>({
     open: false,
     type: "weekly",
     sessionIndex: 0,
     sessionDetails: "",
+    selectedSlotIndices: [],
   });
 
   // Form state
@@ -120,12 +157,82 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
+  const slotGroups = useMemo(() => groupSlotsByDay(privateSlots), [privateSlots]);
+
+  // Validate current selection
+  const selectedSlotObjects = useMemo(() => {
+    return Array.from(selectedSlots).map((i) => privateSlots[i]).filter(Boolean);
+  }, [selectedSlots, privateSlots]);
+
+  const selectionValid = useMemo(() => {
+    if (selectedSlotObjects.length === 0) return false;
+    // All must be same date + location
+    const date = selectedSlotObjects[0].date;
+    const loc = selectedSlotObjects[0].location;
+    const sameGroup = selectedSlotObjects.every((s) => s.date === date && s.location === loc);
+    return sameGroup && areSlotsConsecutive(selectedSlotObjects);
+  }, [selectedSlotObjects]);
+
+  const selectionSummary = useMemo(() => {
+    if (!selectionValid || selectedSlotObjects.length === 0) return null;
+    const { start, end, duration } = getCombinedTimeRange(selectedSlotObjects);
+    const price = getPrivatePrice(duration, 1);
+    return {
+      date: selectedSlotObjects[0].date,
+      location: selectedSlotObjects[0].location,
+      start,
+      end,
+      duration,
+      price,
+    };
+  }, [selectionValid, selectedSlotObjects]);
+
+  function toggleSlot(globalIndex: number) {
+    setSelectedSlots((prev) => {
+      const next = new Set(prev);
+      if (next.has(globalIndex)) {
+        next.delete(globalIndex);
+      } else {
+        // Check if adding this slot would mix dates/locations
+        const newSlot = privateSlots[globalIndex];
+        const existing = Array.from(next).map((i) => privateSlots[i]).filter(Boolean);
+        if (existing.length > 0) {
+          const sameGroup = existing[0].date === newSlot.date && existing[0].location === newSlot.location;
+          if (!sameGroup) {
+            // Clear previous selection and start fresh
+            return new Set([globalIndex]);
+          }
+        }
+        next.add(globalIndex);
+      }
+      return next;
+    });
+  }
+
+  function openPrivateModal() {
+    if (!selectionSummary) return;
+    const indices = Array.from(selectedSlots);
+    const details = `Private Session — ${selectionSummary.date} ${selectionSummary.start}-${selectionSummary.end} (${selectionSummary.duration} min) at ${selectionSummary.location}`;
+    setModal({
+      open: true,
+      type: "private",
+      sessionIndex: indices[0],
+      sessionDetails: details,
+      selectedSlotIndices: indices,
+    });
+    setSubmitResult(null);
+    setParentName("");
+    setEmail("");
+    setPhone("");
+    setKids([{ name: "", age: "" }]);
+  }
+
   function openModal(
     type: BookingType,
     sessionIndex: number,
     details: string
   ) {
-    setModal({ open: true, type, sessionIndex, sessionDetails: details });
+    setModal({ open: true, type, sessionIndex, sessionDetails: details, selectedSlotIndices: [] });
     setSubmitResult(null);
     setParentName("");
     setEmail("");
@@ -185,6 +292,7 @@ export default function Home() {
           success: true,
           message: "Registration confirmed! Check your email for details.",
         });
+        setSelectedSlots(new Set());
         // Refresh schedule data
         const fresh = await fetch("/api/schedule").then((r) => r.json());
         setSchedule(fresh.weeklySchedule || []);
@@ -205,6 +313,16 @@ export default function Home() {
 
   const priceLabel = (() => {
     if (modal.type !== "private" && modal.type !== "group-private") return null;
+    // Use combined duration from selected slots
+    if (modal.selectedSlotIndices.length > 0) {
+      const slots = modal.selectedSlotIndices.map((i) => privateSlots[i]).filter(Boolean);
+      if (slots.length === 0) return null;
+      const { duration } = getCombinedTimeRange(slots);
+      const price = getPrivatePrice(duration, kids.length);
+      const tier = kids.length >= 4 ? "Group Private — 4+ participants" : "Private — up to 3 participants";
+      const timeNote = duration !== 60 ? ` (${duration} min session)` : "";
+      return `${formatPrice(price)} (${tier})${timeNote}`;
+    }
     const slot = privateSlots[modal.sessionIndex];
     if (!slot) return null;
     const duration = getSessionDuration(slot.startTime, slot.endTime);
@@ -470,6 +588,9 @@ export default function Home() {
           <p className="mt-2 text-center text-sm text-brown-500">
             Prorated for shorter sessions &bull; Payment in person — Cash, Venmo, or Zelle
           </p>
+          <p className="mt-1 text-center text-sm text-brown-500">
+            Select one or more consecutive time slots to combine them
+          </p>
 
           {privateSlots.length === 0 && !loading && (
             <p className="mt-8 text-center text-brown-500">
@@ -478,41 +599,68 @@ export default function Home() {
             </p>
           )}
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {privateSlots.map((slot, i) => {
-              const duration = getSessionDuration(slot.startTime, slot.endTime);
-              const price = getPrivatePrice(duration, 1);
-              return (
-                <div
-                  key={slot.id}
-                  className="flex items-center justify-between rounded-xl border border-brown-700 bg-brown-900/40 px-5 py-4"
+          {/* Selection summary bar */}
+          {selectionSummary && (
+            <div className="sticky top-0 z-40 mt-6 flex items-center justify-between rounded-xl bg-mesa-accent/20 border border-mesa-accent/40 px-5 py-3">
+              <div>
+                <p className="font-semibold text-mesa-accent">
+                  {selectionSummary.date} &bull; {selectionSummary.start} - {selectionSummary.end} ({selectionSummary.duration} min)
+                </p>
+                <p className="text-sm text-brown-300">
+                  {selectionSummary.location} &bull; From {formatPrice(selectionSummary.price)}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedSlots(new Set())}
+                  className="rounded bg-brown-700 px-3 py-2 text-sm text-brown-300 hover:bg-brown-600"
                 >
-                  <div>
-                    <p className="font-medium">{slot.date}</p>
-                    <p className="text-sm text-brown-400">
-                      {slot.startTime} - {slot.endTime}
-                      <span className="ml-1 text-brown-500">({duration} min)</span>
-                    </p>
-                    <p className="text-xs text-brown-500">{slot.location}</p>
-                    <p className="mt-1 text-xs text-mesa-accent">
-                      From {formatPrice(price)}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() =>
-                      openModal(
-                        "private",
-                        i,
-                        `Private Session — ${slot.date} ${slot.startTime}-${slot.endTime} (${duration} min) at ${slot.location}`
-                      )
-                    }
-                    className="rounded bg-mesa-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
-                  >
-                    Book
-                  </button>
+                  Clear
+                </button>
+                <button
+                  onClick={openPrivateModal}
+                  className="rounded bg-mesa-accent px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600"
+                >
+                  Book Selected
+                </button>
+              </div>
+            </div>
+          )}
+
+          {selectedSlots.size > 0 && !selectionValid && (
+            <p className="mt-4 text-center text-sm text-yellow-400">
+              Selected slots must be consecutive. Deselect non-adjacent slots.
+            </p>
+          )}
+
+          <div className="mt-6 space-y-6">
+            {slotGroups.map((group) => (
+              <div key={group.key} className="rounded-xl border border-brown-700 bg-brown-900/40 p-5">
+                <h3 className="mb-3 font-semibold text-brown-200">
+                  {group.date} <span className="text-sm font-normal text-brown-500">&bull; {group.location}</span>
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {group.slots.map(({ slot, globalIndex }) => {
+                    const isSelected = selectedSlots.has(globalIndex);
+                    const duration = getSessionDuration(slot.startTime, slot.endTime);
+                    return (
+                      <button
+                        key={slot.id}
+                        onClick={() => toggleSlot(globalIndex)}
+                        className={`rounded-lg border px-4 py-2 text-left text-sm transition ${
+                          isSelected
+                            ? "border-mesa-accent bg-mesa-accent/20 text-white"
+                            : "border-brown-700 bg-brown-800/50 text-brown-300 hover:border-brown-500"
+                        }`}
+                      >
+                        <span className="font-medium">{slot.startTime} - {slot.endTime}</span>
+                        <span className="ml-1 text-xs text-brown-500">({duration}m)</span>
+                      </button>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       </section>
