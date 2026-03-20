@@ -786,7 +786,7 @@ export default function Home() {
       {/* Sticky Nav */}
       <nav className="sticky top-0 z-50 border-b border-brown-800 bg-mesa-dark/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-          <a href="#" className="text-lg font-bold text-white">Mesa Basketball</a>
+          <a href="#" className="text-lg font-bold text-white">MESA BASKETBALL</a>
           <div className="flex items-center gap-4 text-sm">
             <a href="#schedule" className="text-brown-300 hover:text-white">Schedule</a>
             <a href="#camps" className="text-brown-300 hover:text-white">Camps</a>
