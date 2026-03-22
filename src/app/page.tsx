@@ -1527,7 +1527,7 @@ export default function Home() {
                         )}
                       </div>
                       <div className="flex gap-2">
-                        <div className="flex-1 flex flex-col">
+                        <div className="flex flex-col" style={{width: "60%"}}>
                           <label className="mb-1 text-xs text-brown-500">Date of Birth</label>
                           <input
                             type="date"
@@ -1537,7 +1537,7 @@ export default function Home() {
                             className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white focus:border-mesa-accent focus:outline-none"
                           />
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col flex-1">
                           <label className="mb-1 text-xs text-brown-500">Grade</label>
                           <input
                             type="text"
