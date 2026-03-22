@@ -1526,28 +1526,26 @@ export default function Home() {
                           </button>
                         )}
                       </div>
-                      <div className="flex gap-2">
-                        <div className="flex flex-col" style={{width: "60%"}}>
-                          <label className="mb-1 text-xs text-brown-500">Date of Birth</label>
-                          <input
-                            type="date"
-                            required
-                            value={kid.dob}
-                            onChange={(e) => updateKid(i, "dob", e.target.value)}
-                            className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white focus:border-mesa-accent focus:outline-none"
-                          />
-                        </div>
-                        <div className="flex flex-col flex-1">
-                          <label className="mb-1 text-xs text-brown-500">Grade</label>
-                          <input
-                            type="text"
-                            placeholder="Grade"
-                            required
-                            value={kid.grade}
-                            onChange={(e) => updateKid(i, "grade", e.target.value)}
-                            className="w-20 rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white placeholder-brown-500 focus:border-mesa-accent focus:outline-none"
-                          />
-                        </div>
+                      <div>
+                        <label className="mb-1 block text-xs text-brown-500">Date of Birth</label>
+                        <input
+                          type="date"
+                          required
+                          value={kid.dob}
+                          onChange={(e) => updateKid(i, "dob", e.target.value)}
+                          className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white focus:border-mesa-accent focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs text-brown-500">Grade</label>
+                        <input
+                          type="text"
+                          placeholder="Grade"
+                          required
+                          value={kid.grade}
+                          onChange={(e) => updateKid(i, "grade", e.target.value)}
+                          className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white placeholder-brown-500 focus:border-mesa-accent focus:outline-none"
+                        />
                       </div>
                     </div>
                   ))}
