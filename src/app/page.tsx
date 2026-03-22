@@ -283,6 +283,15 @@ export default function Home() {
     message: string;
   } | null>(null);
 
+  // Package enrollment state
+  const [pkgModal, setPkgModal] = useState<{ open: boolean; packageType: 4 | 8 | null }>({ open: false, packageType: null });
+  const [pkgName, setPkgName] = useState("");
+  const [pkgEmail, setPkgEmail] = useState("");
+  const [pkgPhone, setPkgPhone] = useState("");
+  const [pkgMonth, setPkgMonth] = useState("");
+  const [pkgSubmitting, setPkgSubmitting] = useState(false);
+  const [pkgResult, setPkgResult] = useState<{ success: boolean; message: string } | null>(null);
+
   useEffect(() => {
     fetch("/api/schedule")
       .then((r) => r.json())
@@ -299,6 +308,18 @@ export default function Home() {
       })
       .catch(() => setError("Failed to load schedule"))
       .finally(() => setLoading(false));
+  }, []);
+
+  const pkgMonthOptions = useMemo(() => {
+    const now = new Date();
+    const options = [];
+    for (let i = 0; i < 2; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const value = d.toISOString().substring(0, 7);
+      const label = d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      options.push({ value, label });
+    }
+    return options;
   }, []);
 
   const timeWindows = useMemo(() => {
@@ -604,6 +625,35 @@ export default function Home() {
       });
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handlePackageSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setPkgSubmitting(true);
+    setPkgResult(null);
+    try {
+      const res = await fetch("/api/packages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parentName: pkgName,
+          email: pkgEmail,
+          phone: pkgPhone,
+          packageType: pkgModal.packageType,
+          monthYear: pkgMonth,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPkgResult({ success: false, message: data.error || "Enrollment failed." });
+      } else {
+        setPkgResult({ success: true, message: `You're enrolled! Check your email for details. Book your ${pkgModal.packageType} private sessions for ${pkgMonthOptions.find(o => o.value === pkgMonth)?.label} and we'll track them automatically.` });
+      }
+    } catch {
+      setPkgResult({ success: false, message: "Something went wrong. Please try again." });
+    } finally {
+      setPkgSubmitting(false);
     }
   }
 
@@ -1211,6 +1261,53 @@ export default function Home() {
             Every 11th session is on us! Earn free sessions through our loyalty rewards program.
           </p>
 
+          {/* Monthly Packages */}
+          <div className="mt-10 border-t border-brown-800 pt-8">
+            <h3 className="text-center text-xl font-bold">Monthly Packages</h3>
+            <p className="mt-1 text-center text-sm text-brown-400">
+              Commit to a full month of training and save — private sessions only.
+            </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {/* 4-session */}
+              <div className="rounded-xl border border-brown-700 bg-brown-900/40 p-5 text-center">
+                <p className="text-3xl font-bold text-mesa-accent">$475</p>
+                <p className="mt-0.5 text-sm text-brown-300">4 sessions / month</p>
+                <div className="mt-3 rounded-lg bg-brown-800/50 p-3 space-y-0.5">
+                  <p className="text-xs text-brown-500">Normally <span className="line-through">$600</span></p>
+                  <p className="text-sm font-semibold text-green-400">Save $125 — 21% off</p>
+                  <p className="text-xs text-brown-400">$118.75 per session</p>
+                </div>
+                <button
+                  onClick={() => { setPkgModal({ open: true, packageType: 4 }); setPkgName(""); setPkgEmail(""); setPkgPhone(""); setPkgMonth(pkgMonthOptions[0]?.value || ""); setPkgResult(null); }}
+                  className="mt-4 w-full rounded-lg bg-mesa-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+                >
+                  Enroll — 4 Sessions
+                </button>
+              </div>
+              {/* 8-session */}
+              <div className="relative rounded-xl border border-mesa-accent/50 bg-brown-900/40 p-5 text-center">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-mesa-accent px-3 py-0.5 text-xs font-bold text-white whitespace-nowrap">BEST VALUE</span>
+                <p className="text-3xl font-bold text-mesa-accent">$900</p>
+                <p className="mt-0.5 text-sm text-brown-300">8 sessions / month</p>
+                <div className="mt-3 rounded-lg bg-brown-800/50 p-3 space-y-0.5">
+                  <p className="text-xs text-brown-500">Normally <span className="line-through">$1,200</span></p>
+                  <p className="text-sm font-semibold text-green-400">Save $300 — 25% off</p>
+                  <p className="text-xs text-brown-400">$112.50 per session</p>
+                </div>
+                <button
+                  onClick={() => { setPkgModal({ open: true, packageType: 8 }); setPkgName(""); setPkgEmail(""); setPkgPhone(""); setPkgMonth(pkgMonthOptions[0]?.value || ""); setPkgResult(null); }}
+                  className="mt-4 w-full rounded-lg bg-mesa-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+                >
+                  Enroll — 8 Sessions
+                </button>
+              </div>
+            </div>
+            <p className="mt-4 text-center text-xs text-brown-500">
+              Sessions expire at the end of the calendar month — unused sessions do not carry over.
+              Cancellations &amp; reschedules within 48 hours incur a $75 fee (50% of the standard private rate).
+            </p>
+          </div>
+
           {privateSlots.length === 0 && !loading && (
             <p className="mt-8 text-center text-brown-500">
               No available slots right now. Check back soon or contact Artemios directly.
@@ -1709,6 +1806,59 @@ export default function Home() {
                   className="w-full rounded-lg bg-mesa-accent py-3 font-semibold text-white transition hover:bg-amber-600 disabled:opacity-50"
                 >
                   {submitting ? "Submitting..." : "Confirm Registration"}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Package Enrollment Modal */}
+      {pkgModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-brown-900 p-6 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold">
+                {pkgModal.packageType}-Session Package
+              </h3>
+              <button onClick={() => setPkgModal({ open: false, packageType: null })} className="text-2xl text-brown-400 hover:text-white">&times;</button>
+            </div>
+            <p className="mt-1 text-sm text-brown-400">
+              {pkgModal.packageType === 4 ? "$475" : "$900"} — payment in person (Cash, Venmo, or Zelle)
+            </p>
+
+            {pkgResult?.success ? (
+              <div className="mt-6 rounded-lg bg-green-900/50 p-4 text-center">
+                <p className="text-base font-semibold text-green-400">{pkgResult.message}</p>
+                <button onClick={() => setPkgModal({ open: false, packageType: null })} className="mt-4 rounded bg-brown-700 px-4 py-2 text-sm hover:bg-brown-600">Close</button>
+              </div>
+            ) : (
+              <form onSubmit={handlePackageSubmit} className="mt-4 space-y-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-brown-300">Your Name</label>
+                  <input type="text" required value={pkgName} onChange={e => setPkgName(e.target.value)} className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white placeholder-brown-500 focus:border-mesa-accent focus:outline-none" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-brown-300">Email</label>
+                  <input type="email" required value={pkgEmail} onChange={e => setPkgEmail(e.target.value)} className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white placeholder-brown-500 focus:border-mesa-accent focus:outline-none" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-brown-300">Phone</label>
+                  <input type="tel" required value={pkgPhone} onChange={e => setPkgPhone(e.target.value)} className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white placeholder-brown-500 focus:border-mesa-accent focus:outline-none" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-brown-300">Month</label>
+                  <select required value={pkgMonth} onChange={e => setPkgMonth(e.target.value)} className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white focus:border-mesa-accent focus:outline-none">
+                    {pkgMonthOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+                {pkgResult && !pkgResult.success && (
+                  <p className="text-sm text-red-400">{pkgResult.message}</p>
+                )}
+                <button type="submit" disabled={pkgSubmitting} className="w-full rounded-lg bg-mesa-accent py-3 font-semibold text-white transition hover:bg-amber-600 disabled:opacity-50">
+                  {pkgSubmitting ? "Enrolling..." : "Confirm Enrollment"}
                 </button>
               </form>
             )}

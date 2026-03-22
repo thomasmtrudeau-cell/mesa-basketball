@@ -8,6 +8,8 @@ import {
   findReferrerByCode,
   generateReferralCode,
   checkGroupSessionCapacity,
+  getActivePackage,
+  incrementPackageSessions,
 } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
@@ -138,6 +140,15 @@ export async function POST(req: NextRequest) {
         isFree,
       });
       manageToken = result.manageToken;
+
+      // If booking a private session with a booked_date, check for active package
+      if (isPrivateType && bookedDate && !emailOnly) {
+        const bookingMonth = bookedDate.substring(0, 7); // "2026-03"
+        const activePkg = await getActivePackage(email, bookingMonth);
+        if (activePkg && activePkg.sessions_used < activePkg.package_type) {
+          await incrementPackageSessions(activePkg.id, activePkg.sessions_used);
+        }
+      }
 
       // Handle referral: if a new family used a valid referral code
       if (submittedReferralCode && isPrivateType) {

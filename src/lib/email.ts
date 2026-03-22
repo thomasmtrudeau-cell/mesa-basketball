@@ -164,6 +164,119 @@ export async function sendCancellationNotification(data: {
   });
 }
 
+function formatMonthYear(monthYear: string): string {
+  const [year, month] = monthYear.split("-");
+  const d = new Date(parseInt(year), parseInt(month) - 1, 1);
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
+function lastDayOfMonth(monthYear: string): string {
+  const [year, month] = monthYear.split("-");
+  const d = new Date(parseInt(year), parseInt(month), 0);
+  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
+export async function sendPackageConfirmation(data: {
+  parentName: string;
+  email: string;
+  phone: string;
+  packageType: number;
+  monthYear: string;
+  totalPrice: number;
+}) {
+  const resend = getResend();
+  const monthLabel = formatMonthYear(data.monthYear);
+  const expiry = lastDayOfMonth(data.monthYear);
+
+  // Notify Artemi
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: ARTEMI_EMAIL,
+    subject: `New Package Enrollment: ${data.parentName} — ${data.packageType} sessions (${monthLabel})`,
+    html: `
+      <h2>New Monthly Package Enrollment</h2>
+      <p><strong>Parent:</strong> ${data.parentName}</p>
+      <p><strong>Email:</strong> ${data.email}</p>
+      <p><strong>Phone:</strong> ${data.phone}</p>
+      <p><strong>Package:</strong> ${data.packageType} sessions / month</p>
+      <p><strong>Month:</strong> ${monthLabel}</p>
+      <p><strong>Total:</strong> $${data.totalPrice}</p>
+    `,
+  });
+
+  // Confirmation to parent
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: data.email,
+    subject: `Package Confirmed — Mesa Basketball Training (${monthLabel})`,
+    html: `
+      <h2>You're enrolled!</h2>
+      <p>Hi ${data.parentName},</p>
+      <p>Your <strong>${data.packageType}-session private training package</strong> for <strong>${monthLabel}</strong> is confirmed.</p>
+      <h3>Package Details</h3>
+      <ul>
+        <li><strong>Sessions:</strong> ${data.packageType} private sessions</li>
+        <li><strong>Total Price:</strong> $${data.totalPrice}</li>
+        <li><strong>Month:</strong> ${monthLabel}</li>
+        <li><strong>Sessions expire:</strong> ${expiry} — unused sessions do not carry over</li>
+      </ul>
+      <h3>Payment</h3>
+      <p>Payment is made in person: <strong>Cash, Venmo (@Artemios-Gavalas), or Zelle (artemios@mesabasketballtraining.com)</strong>.</p>
+      <h3>Cancellation &amp; Rescheduling Policy</h3>
+      <p>Cancellations and reschedules within 48 hours of a scheduled session incur a <strong>$75 fee</strong> (50% of the standard $150 private rate).</p>
+      <h3>Track Your Sessions</h3>
+      <p><a href="${BASE_URL}/my-bookings" style="color: #c4833e; font-weight: bold;">View My Bookings</a> — check how many sessions you've used this month.</p>
+      <br/>
+      <p>Questions? Contact Artemios at (631) 599-1280 or <a href="mailto:artemios@mesabasketballtraining.com">artemios@mesabasketballtraining.com</a>.</p>
+      <p>— Mesa Basketball Training</p>
+    `,
+  });
+}
+
+export async function sendPackageReminder(data: {
+  parentName: string;
+  email: string;
+  packageType: number;
+  sessionsUsed: number;
+  monthYear: string;
+}) {
+  const resend = getResend();
+  const sessionsRemaining = data.packageType - data.sessionsUsed;
+  const monthLabel = formatMonthYear(data.monthYear);
+
+  // Reminder to parent
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: data.email,
+    subject: `Your Mesa Basketball sessions are expiring soon!`,
+    html: `
+      <h2>Don't let your sessions go to waste!</h2>
+      <p>Hey ${data.parentName},</p>
+      <p>Just a heads up — your <strong>${monthLabel}</strong> package has <strong>${sessionsRemaining} session${sessionsRemaining !== 1 ? "s" : ""} remaining</strong> and the month ends in 3 days.</p>
+      <p>Don't let them go to waste! Book now and make the most of your training time.</p>
+      <p><a href="${BASE_URL}/#private" style="color: #c4833e; font-weight: bold; font-size: 16px;">Book Your Remaining Sessions &rarr;</a></p>
+      <br/>
+      <p>Keep working hard — every session counts!</p>
+      <p>Questions? Reach out to Artemios at (631) 599-1280 or <a href="mailto:artemios@mesabasketballtraining.com">artemios@mesabasketballtraining.com</a>.</p>
+      <p>— Mesa Basketball Training</p>
+    `,
+  });
+
+  // Notify Artemi
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: ARTEMI_EMAIL,
+    subject: `Package Reminder Sent: ${data.parentName} — ${sessionsRemaining} session(s) remaining`,
+    html: `
+      <p><strong>Parent:</strong> ${data.parentName} (${data.email})</p>
+      <p><strong>Month:</strong> ${monthLabel}</p>
+      <p><strong>Sessions Used:</strong> ${data.sessionsUsed} / ${data.packageType}</p>
+      <p><strong>Remaining:</strong> ${sessionsRemaining}</p>
+      <p>A reminder email has been sent to the parent.</p>
+    `,
+  });
+}
+
 export async function sendRescheduleNotification(data: {
   parentName: string;
   email: string;

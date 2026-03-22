@@ -42,6 +42,7 @@ export default function MyBookings() {
     sessionsUntilFree: number;
     referralCode: string | null;
   } | null>(null);
+  const [activePackage, setActivePackage] = useState<{ packageType: number; sessionsUsed: number; monthYear: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -73,6 +74,7 @@ export default function MyBookings() {
       } else {
         setBookings(data.registrations);
         setRewards(data.rewards || null);
+        setActivePackage(data.activePackage || null);
         localStorage.setItem("mesa_parent_email", lookupEmail.trim());
       }
     } catch {
@@ -169,6 +171,52 @@ export default function MyBookings() {
                   </p>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Monthly Package Status Card */}
+        {activePackage && (
+          <div className="mt-6 rounded-2xl bg-brown-900 p-6">
+            <h2 className="text-lg font-bold">
+              Monthly Package —{" "}
+              {new Date(activePackage.monthYear + "-01").toLocaleDateString("en-US", {
+                month: "long",
+                year: "numeric",
+                timeZone: "UTC",
+              })}
+            </h2>
+            <div className="mt-4 space-y-3">
+              <p className="text-sm text-brown-300">
+                {activePackage.packageType}-session package
+              </p>
+              <div>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="text-brown-400">
+                    {activePackage.sessionsUsed} used &middot;{" "}
+                    {activePackage.packageType - activePackage.sessionsUsed} remaining
+                  </span>
+                  <span className="text-brown-500 text-xs">
+                    {activePackage.sessionsUsed}/{activePackage.packageType}
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-brown-700">
+                  <div
+                    className="h-2 rounded-full bg-mesa-accent transition-all"
+                    style={{
+                      width: `${Math.min(100, (activePackage.sessionsUsed / activePackage.packageType) * 100)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-brown-500">
+                Sessions expire{" "}
+                {new Date(
+                  new Date(activePackage.monthYear + "-01").getFullYear(),
+                  new Date(activePackage.monthYear + "-01").getMonth() + 1,
+                  0
+                ).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+              </p>
             </div>
           </div>
         )}

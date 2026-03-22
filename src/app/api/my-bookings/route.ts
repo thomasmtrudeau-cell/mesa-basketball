@@ -4,6 +4,7 @@ import {
   getConfirmedSessionCount,
   getReferralCredits,
   generateReferralCode,
+  getActivePackage,
 } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
@@ -18,10 +19,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const [registrations, sessionCount, referralCredits] = await Promise.all([
+    const currentMonthYear = new Date().toISOString().substring(0, 7); // "2026-03"
+    const [registrations, sessionCount, referralCredits, activePackage] = await Promise.all([
       getRegistrationsByEmail(email),
       getConfirmedSessionCount(email).catch(() => 0),
       getReferralCredits(email).catch(() => 0),
+      getActivePackage(email, currentMonthYear).catch(() => null),
     ]);
 
     // Get referral code from most recent registration, or generate one
@@ -56,6 +59,13 @@ export async function POST(req: NextRequest) {
         sessionsUntilFree: sessionsUntilFree === 11 ? 11 : sessionsUntilFree,
         referralCode,
       },
+      activePackage: activePackage
+        ? {
+            packageType: activePackage.package_type,
+            sessionsUsed: activePackage.sessions_used,
+            monthYear: activePackage.month_year,
+          }
+        : null,
     });
   } catch {
     return NextResponse.json(
