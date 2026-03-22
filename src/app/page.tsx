@@ -1526,41 +1526,39 @@ export default function Home() {
                           </button>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="mb-1 block text-xs text-brown-500">Date of Birth</label>
-                          <input
-                            type="date"
-                            required
-                            value={kid.dob}
-                            onChange={(e) => updateKid(i, "dob", e.target.value)}
-                            className="w-full rounded-lg border border-brown-700 bg-brown-800 px-2 py-2 text-white text-sm focus:border-mesa-accent focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="mb-1 block text-xs text-brown-500">Grade</label>
-                          <select
-                            required
-                            value={kid.grade}
-                            onChange={(e) => updateKid(i, "grade", e.target.value)}
-                            className="w-full rounded-lg border border-brown-700 bg-brown-800 px-2 py-2 text-white text-sm focus:border-mesa-accent focus:outline-none"
-                          >
-                            <option value="">Grade</option>
-                            <option value="K">K</option>
-                            <option value="1">1st</option>
-                            <option value="2">2nd</option>
-                            <option value="3">3rd</option>
-                            <option value="4">4th</option>
-                            <option value="5">5th</option>
-                            <option value="6">6th</option>
-                            <option value="7">7th</option>
-                            <option value="8">8th</option>
-                            <option value="9">9th</option>
-                            <option value="10">10th</option>
-                            <option value="11">11th</option>
-                            <option value="12">12th</option>
-                          </select>
-                        </div>
+                      <div>
+                        <label className="mb-1 block text-xs text-brown-500">Date of Birth</label>
+                        <input
+                          type="date"
+                          required
+                          value={kid.dob}
+                          onChange={(e) => updateKid(i, "dob", e.target.value)}
+                          className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white text-sm focus:border-mesa-accent focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs text-brown-500">Grade</label>
+                        <select
+                          required
+                          value={kid.grade}
+                          onChange={(e) => updateKid(i, "grade", e.target.value)}
+                          className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white text-sm focus:border-mesa-accent focus:outline-none"
+                        >
+                          <option value="">Select grade...</option>
+                          <option value="K">Kindergarten</option>
+                          <option value="1">1st Grade</option>
+                          <option value="2">2nd Grade</option>
+                          <option value="3">3rd Grade</option>
+                          <option value="4">4th Grade</option>
+                          <option value="5">5th Grade</option>
+                          <option value="6">6th Grade</option>
+                          <option value="7">7th Grade</option>
+                          <option value="8">8th Grade</option>
+                          <option value="9">9th Grade</option>
+                          <option value="10">10th Grade</option>
+                          <option value="11">11th Grade</option>
+                          <option value="12">12th Grade</option>
+                        </select>
                       </div>
                     </div>
                   ))}
