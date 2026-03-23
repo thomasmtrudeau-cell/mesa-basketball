@@ -338,6 +338,39 @@ export async function decrementPackageSessions(id: string, currentUsed: number):
     .eq("id", id);
 }
 
+/** Set sessions_used to an exact value (used for recalculation) */
+export async function setPackageSessions(id: string, count: number): Promise<void> {
+  const supabase = getSupabase();
+  await supabase
+    .from("monthly_packages")
+    .update({ sessions_used: count })
+    .eq("id", id);
+}
+
+/** Count confirmed private/group-private registrations for an email in a given month */
+export async function countConfirmedPrivateSessions(email: string, monthYear: string): Promise<number> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("registrations")
+    .select("booked_date")
+    .eq("email", email.toLowerCase().trim())
+    .eq("status", "confirmed")
+    .in("type", ["private", "group-private"])
+    .not("booked_date", "is", null);
+
+  if (error || !data) return 0;
+
+  return data.filter((r) => {
+    const raw = r.booked_date as string;
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(raw)
+      ? new Date(raw + "T12:00:00")
+      : new Date(raw);
+    if (isNaN(d.getTime())) return false;
+    const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    return m === monthYear;
+  }).length;
+}
+
 export async function getPackagesNeedingReminder(monthYear: string): Promise<MonthlyPackage[]> {
   const supabase = getSupabase();
   const { data, error } = await supabase

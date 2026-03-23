@@ -4,7 +4,8 @@ import {
   cancelRegistration,
   addRegistration,
   getActivePackage,
-  decrementPackageSessions,
+  setPackageSessions,
+  countConfirmedPrivateSessions,
 } from "@/lib/supabase";
 import {
   sendCancellationNotification,
@@ -82,17 +83,23 @@ export async function DELETE(
     );
   }
 
-  // If this was a private session tied to a monthly package, free up the slot
+  // Recalculate package sessions_used after cancellation
   if (reg.booked_date && (reg.type === "private" || reg.type === "group-private")) {
     try {
-      const d = /^\d{4}-\d{2}-\d{2}$/.test(reg.booked_date)
-        ? new Date(reg.booked_date + "T12:00:00")
-        : new Date(reg.booked_date);
+      const raw = reg.booked_date;
+      const d = /^\d{4}-\d{2}-\d{2}$/.test(raw)
+        ? new Date(raw + "T12:00:00")
+        : new Date(raw);
       if (!isNaN(d.getTime())) {
         const bookingMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         const activePkg = await getActivePackage(reg.email, bookingMonth);
-        if (activePkg && activePkg.sessions_used > 0) {
-          await decrementPackageSessions(activePkg.id, activePkg.sessions_used);
+        if (activePkg) {
+          // Count remaining confirmed sessions after this cancellation
+          const confirmedCount = await countConfirmedPrivateSessions(reg.email, bookingMonth);
+          const newUsed = Math.min(activePkg.package_type, confirmedCount);
+          if (newUsed !== activePkg.sessions_used) {
+            await setPackageSessions(activePkg.id, newUsed);
+          }
         }
       }
     } catch {

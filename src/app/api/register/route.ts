@@ -10,7 +10,8 @@ import {
   generateReferralCode,
   checkGroupSessionCapacity,
   getActivePackage,
-  incrementPackageSessions,
+  setPackageSessions,
+  countConfirmedPrivateSessions,
 } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
@@ -157,10 +158,15 @@ export async function POST(req: NextRequest) {
           ? null
           : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         const activePkg = bookingMonth ? await getActivePackage(email, bookingMonth) : null;
-        if (activePkg && activePkg.sessions_used < activePkg.package_type) {
-          await incrementPackageSessions(activePkg.id, activePkg.sessions_used);
-          packageSessionsRemaining = activePkg.package_type - activePkg.sessions_used - 1;
-          packageType = activePkg.package_type;
+        if (activePkg && bookingMonth) {
+          // Count confirmed sessions including the one just saved
+          const confirmedCount = await countConfirmedPrivateSessions(email, bookingMonth);
+          const newUsed = Math.min(activePkg.package_type, confirmedCount);
+          await setPackageSessions(activePkg.id, newUsed);
+          if (newUsed <= activePkg.package_type) {
+            packageSessionsRemaining = activePkg.package_type - newUsed;
+            packageType = activePkg.package_type;
+          }
         }
       }
 
