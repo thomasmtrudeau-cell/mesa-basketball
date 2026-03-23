@@ -939,6 +939,7 @@ export default function Home() {
             <a href="#schedule" className="text-brown-300 hover:text-white">Schedule</a>
             <a href="#camps" className="text-brown-300 hover:text-white">Camps</a>
             <a href="#private" className="text-brown-300 hover:text-white">Private Sessions</a>
+            <a href="/about" className="text-brown-300 hover:text-white">About</a>
             <a href="/my-bookings" className="rounded bg-mesa-accent/20 px-3 py-1 text-mesa-accent hover:bg-mesa-accent/30">My Bookings</a>
           </div>
           {/* Mobile hamburger */}
@@ -964,6 +965,7 @@ export default function Home() {
             <a href="#schedule" onClick={() => setMobileMenuOpen(false)} className="block text-brown-300 hover:text-white py-1">Schedule</a>
             <a href="#camps" onClick={() => setMobileMenuOpen(false)} className="block text-brown-300 hover:text-white py-1">Camps</a>
             <a href="#private" onClick={() => setMobileMenuOpen(false)} className="block text-brown-300 hover:text-white py-1">Private Sessions</a>
+            <a href="/about" onClick={() => setMobileMenuOpen(false)} className="block text-brown-300 hover:text-white py-1">About</a>
             <a href="/my-bookings" onClick={() => setMobileMenuOpen(false)} className="block rounded bg-mesa-accent/20 px-3 py-2 text-mesa-accent hover:bg-mesa-accent/30 text-center font-medium">My Bookings</a>
           </div>
         )}
