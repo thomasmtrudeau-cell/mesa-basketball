@@ -85,11 +85,15 @@ export async function DELETE(
   // If this was a private session tied to a monthly package, free up the slot
   if (reg.booked_date && (reg.type === "private" || reg.type === "group-private")) {
     try {
-      const d = new Date(reg.booked_date + "T12:00:00");
-      const bookingMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      const activePkg = await getActivePackage(reg.email, bookingMonth);
-      if (activePkg && activePkg.sessions_used > 0) {
-        await decrementPackageSessions(activePkg.id, activePkg.sessions_used);
+      const d = /^\d{4}-\d{2}-\d{2}$/.test(reg.booked_date)
+        ? new Date(reg.booked_date + "T12:00:00")
+        : new Date(reg.booked_date);
+      if (!isNaN(d.getTime())) {
+        const bookingMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const activePkg = await getActivePackage(reg.email, bookingMonth);
+        if (activePkg && activePkg.sessions_used > 0) {
+          await decrementPackageSessions(activePkg.id, activePkg.sessions_used);
+        }
       }
     } catch {
       // non-critical — don't fail the cancellation
@@ -100,6 +104,7 @@ export async function DELETE(
     parentName: reg.parent_name,
     email: reg.email,
     sessionDetails: reg.session_details,
+    sessionType: reg.type,
     isLateCancel,
   });
 

@@ -143,12 +143,14 @@ export async function sendCancellationNotification(data: {
   parentName: string;
   email: string;
   sessionDetails: string;
+  sessionType?: string;
   isLateCancel: boolean;
 }) {
   const resend = getResend();
 
+  const lateFee = data.sessionType === "group-private" ? 125 : 75;
   const lateNote = data.isLateCancel
-    ? "<p><strong>Note:</strong> This cancellation was made within 48 hours of the session. Per our policy, 50% of the session fee is still due.</p>"
+    ? `<p><strong>Note:</strong> This cancellation was made within 48 hours of the session. Per our policy, a $${lateFee} fee (50% of the session rate) is still due. Please pay via Zelle (<strong>artemios@mesabasketballtraining.com</strong>), Cash, or Venmo (<strong>@Artemios-Gavalas</strong>).</p>`
     : "";
 
   // Email to Artemi
@@ -160,7 +162,7 @@ export async function sendCancellationNotification(data: {
       <h2>Session Cancelled</h2>
       <p><strong>Parent:</strong> ${data.parentName}</p>
       <p><strong>Session:</strong> ${formatSessionDetailsForEmail(data.sessionDetails)}</p>
-      ${data.isLateCancel ? "<p><strong>⚠️ Late cancellation — 50% fee applies</strong></p>" : ""}
+      ${data.isLateCancel ? `<p><strong>⚠️ Late cancellation — $${lateFee} fee applies</strong></p>` : ""}
     `,
   });
 
