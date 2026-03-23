@@ -16,7 +16,7 @@ function formatSessionDetailsForEmail(details: string): string {
   let result = details;
   for (const [key, { name, url }] of Object.entries(LOCATION_MAP)) {
     if (result.includes(key)) {
-      result = result.replace(key, `<a href="${url}" style="color: #c4833e;">${name}</a>`);
+      result = result.replace(key, `<a href="${url}" style="color: #d4af37;">${name}</a>`);
       break;
     }
   }
@@ -90,10 +90,10 @@ export async function sendRegistrationNotification(data: {
     ? '<p style="background: #166534; color: #4ade80; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center;">This session is FREE — thank you for your loyalty!</p>'
     : "";
 
-  const manageSection = `<p><a href="${BASE_URL}/my-bookings" style="color: #c4833e; font-weight: bold;">View My Bookings</a> — Manage, cancel, or reschedule your sessions</p>`;
+  const manageSection = `<p><a href="${BASE_URL}/my-bookings" style="color: #d4af37; font-weight: bold;">View My Bookings</a> — Manage, cancel, or reschedule your sessions</p>`;
 
   const referralSection = data.referralCode
-    ? `<p style="background: #f5f0eb; padding: 12px; border-radius: 8px; margin-top: 12px; color: #3d2519;"><strong style="color: #5c3d2e;">Your referral code: ${data.referralCode}</strong><br/><span style="font-size: 13px; color: #7c5e52;">Share it with friends — when they book their first session, you both earn credit toward a free session.</span></p>`
+    ? `<p style="background: #162d5a; padding: 12px; border-radius: 8px; margin-top: 12px; color: #ffffff;"><strong style="color: #d4af37;">Your referral code: ${data.referralCode}</strong><br/><span style="font-size: 13px; color: #93c5fd;">Share it with friends — when they book their first session, you both earn credit toward a free session.</span></p>`
     : "";
 
   await resend.emails.send({
@@ -156,7 +156,7 @@ export async function sendCancellationNotification(data: {
       <p>Your session has been cancelled:</p>
       <p><strong>Session:</strong> ${formatSessionDetailsForEmail(data.sessionDetails)}</p>
       ${lateNote}
-      <p><a href="${BASE_URL}/my-bookings" style="color: #c4833e; font-weight: bold;">View My Bookings</a></p>
+      <p><a href="${BASE_URL}/my-bookings" style="color: #d4af37; font-weight: bold;">View My Bookings</a></p>
       <br/>
       <p>Questions? Contact Artemios at (631) 599-1280 or email <a href="mailto:artemios@mesabasketballtraining.com">artemios@mesabasketballtraining.com</a>.</p>
       <p>— Mesa Basketball Training</p>
@@ -225,7 +225,7 @@ export async function sendPackageConfirmation(data: {
       <h3>Cancellation &amp; Rescheduling Policy</h3>
       <p>Cancellations and reschedules within 48 hours of a scheduled session incur a <strong>$75 fee</strong> (50% of the standard $150 private rate).</p>
       <h3>Track Your Sessions</h3>
-      <p><a href="${BASE_URL}/my-bookings" style="color: #c4833e; font-weight: bold;">View My Bookings</a> — check how many sessions you've used this month.</p>
+      <p><a href="${BASE_URL}/my-bookings" style="color: #d4af37; font-weight: bold;">View My Bookings</a> — check how many sessions you've used this month.</p>
       <br/>
       <p>Questions? Contact Artemios at (631) 599-1280 or <a href="mailto:artemios@mesabasketballtraining.com">artemios@mesabasketballtraining.com</a>.</p>
       <p>— Mesa Basketball Training</p>
@@ -254,7 +254,7 @@ export async function sendPackageReminder(data: {
       <p>Hey ${data.parentName},</p>
       <p>Just a heads up — your <strong>${monthLabel}</strong> package has <strong>${sessionsRemaining} session${sessionsRemaining !== 1 ? "s" : ""} remaining</strong> and the month ends in 3 days.</p>
       <p>Don't let them go to waste! Book now and make the most of your training time.</p>
-      <p><a href="${BASE_URL}/#private" style="color: #c4833e; font-weight: bold; font-size: 16px;">Book Your Remaining Sessions &rarr;</a></p>
+      <p><a href="${BASE_URL}/#private" style="color: #d4af37; font-weight: bold; font-size: 16px;">Book Your Remaining Sessions &rarr;</a></p>
       <br/>
       <p>Keep working hard — every session counts!</p>
       <p>Questions? Reach out to Artemios at (631) 599-1280 or <a href="mailto:artemios@mesabasketballtraining.com">artemios@mesabasketballtraining.com</a>.</p>
@@ -311,7 +311,7 @@ export async function sendRescheduleNotification(data: {
       <p>Your session has been rescheduled.</p>
       <p><strong>Old Session:</strong> ${formatSessionDetailsForEmail(data.oldSessionDetails)}</p>
       <p><strong>New Session:</strong> ${formatSessionDetailsForEmail(data.newSessionDetails)}</p>
-      <p><a href="${BASE_URL}/my-bookings" style="color: #c4833e; font-weight: bold;">View My Bookings</a> — Manage all your sessions</p>
+      <p><a href="${BASE_URL}/my-bookings" style="color: #d4af37; font-weight: bold;">View My Bookings</a> — Manage all your sessions</p>
       <br/>
       <p>Questions? Contact Artemios at (631) 599-1280 or email <a href="mailto:artemios@mesabasketballtraining.com">artemios@mesabasketballtraining.com</a>.</p>
       <p>— Mesa Basketball Training</p>
