@@ -766,19 +766,24 @@ export default function Home() {
 
   // Dates that have available private slots (for calendar highlights)
   const calendarHighlightedDates = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const dates = new Set<string>();
     timeWindows.forEach((w) => {
-      if (w.endMins - w.startMins >= 60) dates.add(w.date);
+      if (w.endMins - w.startMins >= 60 && new Date(w.date) >= today) dates.add(w.date);
     });
     return dates;
   }, [timeWindows]);
 
-  // Filter time windows by day of week, month, and calendar date
+  // Filter time windows by day of week, month, calendar date, and past dates
   const filteredWindows = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     return timeWindows.filter((w) => {
       if (w.endMins - w.startMins < 60) return false;
-      if (calendarSelectedDate && w.date !== calendarSelectedDate) return false;
       const d = new Date(w.date);
+      if (d < today) return false;
+      if (calendarSelectedDate && w.date !== calendarSelectedDate) return false;
       if (filterDays.size > 0 && !filterDays.has(d.getUTCDay())) return false;
       if (filterMonth) {
         const monthStr = d.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
