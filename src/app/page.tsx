@@ -1014,7 +1014,8 @@ export default function Home() {
               src="/photo1.jpg"
               alt="Artemios Gavalas at St. John's"
               fill
-              className="object-cover object-top"
+              className="object-cover"
+              style={{ objectPosition: "center 15%" }}
               priority
             />
           </div>
