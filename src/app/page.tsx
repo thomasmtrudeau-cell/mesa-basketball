@@ -1459,7 +1459,7 @@ export default function Home() {
                       : "border-brown-700 text-brown-400 hover:border-brown-500 hover:text-white"
                   }`}
                 >
-                  📅 {calendarSelectedDate ? calendarSelectedDate : "Pick a date"}
+                  📅 {calendarSelectedDate ? calendarSelectedDate : "Full Calendar"}
                   {calendarSelectedDate && (
                     <span
                       onClick={(e) => { e.stopPropagation(); setCalendarSelectedDate(null); setShowCalendar(false); }}
