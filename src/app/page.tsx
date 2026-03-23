@@ -940,6 +940,13 @@ export default function Home() {
             <a href="#camps" className="text-brown-300 hover:text-white">Camps</a>
             <a href="#private" className="text-brown-300 hover:text-white">Private Sessions</a>
             <a href="/about" className="text-brown-300 hover:text-white">About</a>
+            <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-brown-300 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+              </svg>
+            </a>
             <a href="/my-bookings" className="rounded bg-mesa-accent/20 px-3 py-1 text-mesa-accent hover:bg-mesa-accent/30">My Bookings</a>
           </div>
           {/* Mobile hamburger */}
@@ -966,6 +973,14 @@ export default function Home() {
             <a href="#camps" onClick={() => setMobileMenuOpen(false)} className="block text-brown-300 hover:text-white py-1">Camps</a>
             <a href="#private" onClick={() => setMobileMenuOpen(false)} className="block text-brown-300 hover:text-white py-1">Private Sessions</a>
             <a href="/about" onClick={() => setMobileMenuOpen(false)} className="block text-brown-300 hover:text-white py-1">About</a>
+            <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-brown-300 hover:text-white py-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+              </svg>
+              Instagram
+            </a>
             <a href="/my-bookings" onClick={() => setMobileMenuOpen(false)} className="block rounded bg-mesa-accent/20 px-3 py-2 text-mesa-accent hover:bg-mesa-accent/30 text-center font-medium">My Bookings</a>
           </div>
         )}
@@ -1669,12 +1684,27 @@ export default function Home() {
               </a>
             </p>
           </div>
-          <a
-            href="/my-bookings"
-            className="mt-6 inline-block text-sm text-mesa-accent hover:text-yellow-300"
-          >
-            My Bookings &mdash; Look Up Your Registrations
-          </a>
+          <div className="mt-6 flex items-center justify-center gap-4">
+            <a
+              href="/my-bookings"
+              className="text-sm text-mesa-accent hover:text-yellow-300"
+            >
+              My Bookings &mdash; Look Up Your Registrations
+            </a>
+            <a
+              href="https://www.instagram.com/mesabasketballtraining"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="text-brown-400 hover:text-white transition"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+              </svg>
+            </a>
+          </div>
           <p className="mt-4 text-sm text-brown-600">
             &copy; 2025&ndash;{new Date().getFullYear()} Mesa Basketball Training LLC. All rights reserved.
           </p>
