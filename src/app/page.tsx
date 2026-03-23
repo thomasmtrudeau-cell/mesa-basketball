@@ -225,6 +225,75 @@ function getUpsellOptions(
   return options;
 }
 
+function MiniCalendar({
+  month,
+  onMonthChange,
+  highlightedDates,
+  selectedDate,
+  onSelectDate,
+}: {
+  month: Date;
+  onMonthChange: (d: Date) => void;
+  highlightedDates: Set<string>;
+  selectedDate: string | null;
+  onSelectDate: (d: string | null) => void;
+}) {
+  const year = month.getUTCFullYear();
+  const mon = month.getUTCMonth();
+  const firstDay = new Date(Date.UTC(year, mon, 1)).getUTCDay();
+  const daysInMonth = new Date(Date.UTC(year, mon + 1, 0)).getUTCDate();
+  const today = new Date();
+  const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  return (
+    <div className="rounded-lg border border-brown-700 bg-brown-900/40 p-3 w-64 shrink-0">
+      <div className="flex items-center justify-between mb-2">
+        <button onClick={() => onMonthChange(new Date(Date.UTC(year, mon - 1, 1)))} className="text-brown-400 hover:text-white px-1 text-lg leading-none">‹</button>
+        <span className="text-sm font-medium">{month.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}</span>
+        <button onClick={() => onMonthChange(new Date(Date.UTC(year, mon + 1, 1)))} className="text-brown-400 hover:text-white px-1 text-lg leading-none">›</button>
+      </div>
+      <div className="grid grid-cols-7 text-center mb-1">
+        {["Su","Mo","Tu","We","Th","Fr","Sa"].map((d) => (
+          <span key={d} className="text-xs text-brown-600">{d}</span>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 text-center gap-y-1">
+        {cells.map((day, i) => {
+          if (!day) return <span key={i} />;
+          const cellDate = new Date(Date.UTC(year, mon, day));
+          const dateStr = cellDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+          const hasSlot = highlightedDates.has(dateStr);
+          const isSelected = selectedDate === dateStr;
+          const isPast = cellDate < todayUTC;
+          return (
+            <button
+              key={i}
+              disabled={!hasSlot}
+              onClick={() => onSelectDate(isSelected ? null : dateStr)}
+              className={`text-xs rounded-full w-7 h-7 mx-auto flex items-center justify-center transition ${
+                isSelected ? "bg-mesa-accent text-white font-bold" :
+                hasSlot ? "bg-brown-700 text-white hover:bg-brown-600 font-medium cursor-pointer" :
+                isPast ? "text-brown-800 cursor-default" :
+                "text-brown-700 cursor-default"
+              }`}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+      {selectedDate && (
+        <button onClick={() => onSelectDate(null)} className="mt-2 w-full text-xs text-brown-500 hover:text-brown-400">
+          Clear date
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   const [schedule, setSchedule] = useState<WeeklySession[]>([]);
   const [camps, setCamps] = useState<Camp[]>([]);
@@ -262,6 +331,13 @@ export default function Home() {
   const [hideUpsell, setHideUpsell] = useState(false);
   const [filterDays, setFilterDays] = useState<Set<number>>(new Set());
   const [filterMonth, setFilterMonth] = useState<string>("");
+  const [calendarMonth, setCalendarMonth] = useState<Date>(() => {
+    const now = new Date();
+    return new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
+  });
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<string | null>(null);
+  const [showAllPrivate, setShowAllPrivate] = useState(false);
+  const [showAllGroups, setShowAllGroups] = useState<Set<string>>(new Set());
   const [upsellExtra, setUpsellExtra] = useState(0); // extra minutes accepted
   const [referralCode, setReferralCode] = useState("");
 
@@ -687,10 +763,20 @@ export default function Home() {
     return `${formatPrice(totalPrice)} (${tier})${timeNote}${savingsNote}`;
   })();
 
-  // Filter time windows by day of week and month
+  // Dates that have available private slots (for calendar highlights)
+  const calendarHighlightedDates = useMemo(() => {
+    const dates = new Set<string>();
+    timeWindows.forEach((w) => {
+      if (w.endMins - w.startMins >= 60) dates.add(w.date);
+    });
+    return dates;
+  }, [timeWindows]);
+
+  // Filter time windows by day of week, month, and calendar date
   const filteredWindows = useMemo(() => {
     return timeWindows.filter((w) => {
       if (w.endMins - w.startMins < 60) return false;
+      if (calendarSelectedDate && w.date !== calendarSelectedDate) return false;
       const d = new Date(w.date);
       if (filterDays.size > 0 && !filterDays.has(d.getUTCDay())) return false;
       if (filterMonth) {
@@ -699,7 +785,7 @@ export default function Home() {
       }
       return true;
     });
-  }, [timeWindows, filterDays, filterMonth]);
+  }, [timeWindows, filterDays, filterMonth, calendarSelectedDate]);
 
   // Available months from time windows
   const availableMonths = useMemo(() => {
@@ -1034,6 +1120,8 @@ export default function Home() {
                     const filteredSessions = groupDayFilter.size > 0
                       ? futureSessions.filter((s) => groupDayFilter.has(new Date(s.date).getUTCDay()))
                       : futureSessions;
+                    const showAll = showAllGroups.has(group);
+                    const visibleSessions = showAll ? filteredSessions : filteredSessions.slice(0, 5);
 
                     return (
                     <div className="mt-4 space-y-2" onClick={(e) => e.stopPropagation()}>
@@ -1094,7 +1182,7 @@ export default function Home() {
                           )}
                         </div>
                       )}
-                      {filteredSessions.map((s) => {
+                      {visibleSessions.map((s) => {
                         const key = getGroupSessionKey(s);
                         const enrolled = getEnrollmentCount(s);
                         const spotsLeft = s.maxSpots - enrolled;
@@ -1139,6 +1227,21 @@ export default function Home() {
                           </label>
                         );
                       })}
+
+                      {/* View more/less sessions */}
+                      {filteredSessions.length > 5 && (
+                        <button
+                          onClick={() => setShowAllGroups((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(group)) next.delete(group);
+                            else next.add(group);
+                            return next;
+                          })}
+                          className="w-full rounded-lg border border-brown-700 py-1.5 text-xs text-brown-400 hover:border-brown-500 hover:text-white transition"
+                        >
+                          {showAll ? "Show less ↑" : `View ${filteredSessions.length - 5} more sessions ↓`}
+                        </button>
+                      )}
 
                       {/* Pricing summary and register button */}
                       {groupPricing.count > 0 && (
@@ -1316,51 +1419,62 @@ export default function Home() {
 
           {/* Filters */}
           {timeWindows.length > 0 && (
-            <div className="mt-6 space-y-3">
-              {/* Day of week pills */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-brown-500 mr-1">Day:</span>
-                {availableDays.map((day) => (
-                  <button
-                    key={day}
-                    onClick={() => setFilterDays((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(day)) next.delete(day);
-                      else next.add(day);
-                      return next;
-                    })}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                      filterDays.has(day)
-                        ? "bg-mesa-accent text-white"
-                        : "bg-brown-800 text-brown-400 hover:bg-brown-700"
-                    }`}
-                  >
-                    {DAY_LABELS[day]}
-                  </button>
-                ))}
-                {filterDays.size > 0 && (
-                  <button
-                    onClick={() => setFilterDays(new Set())}
-                    className="text-xs text-brown-500 hover:text-brown-400"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-              {/* Month dropdown */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-brown-500">Month:</span>
-                <select
-                  value={filterMonth}
-                  onChange={(e) => setFilterMonth(e.target.value)}
-                  className="rounded-lg border border-brown-700 bg-brown-800 px-3 py-1 text-sm text-white focus:border-mesa-accent focus:outline-none"
-                >
-                  <option value="">All months</option>
-                  {availableMonths.map((m) => (
-                    <option key={m} value={m}>{m}</option>
+            <div className="mt-6 flex flex-wrap gap-6">
+              {/* Left: day + month filters */}
+              <div className="flex-1 min-w-48 space-y-3">
+                {/* Day of week pills */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-brown-500 mr-1">Day:</span>
+                  {availableDays.map((day) => (
+                    <button
+                      key={day}
+                      onClick={() => { setFilterDays((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(day)) next.delete(day);
+                        else next.add(day);
+                        return next;
+                      }); setCalendarSelectedDate(null); }}
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                        filterDays.has(day)
+                          ? "bg-mesa-accent text-white"
+                          : "bg-brown-800 text-brown-400 hover:bg-brown-700"
+                      }`}
+                    >
+                      {DAY_LABELS[day]}
+                    </button>
                   ))}
-                </select>
+                  {filterDays.size > 0 && (
+                    <button
+                      onClick={() => setFilterDays(new Set())}
+                      className="text-xs text-brown-500 hover:text-brown-400"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                {/* Month dropdown */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-brown-500">Month:</span>
+                  <select
+                    value={filterMonth}
+                    onChange={(e) => { setFilterMonth(e.target.value); setCalendarSelectedDate(null); }}
+                    className="rounded-lg border border-brown-700 bg-brown-800 px-3 py-1 text-sm text-white focus:border-mesa-accent focus:outline-none"
+                  >
+                    <option value="">All months</option>
+                    {availableMonths.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
+              {/* Right: mini calendar */}
+              <MiniCalendar
+                month={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                highlightedDates={calendarHighlightedDates}
+                selectedDate={calendarSelectedDate}
+                onSelectDate={(d) => { setCalendarSelectedDate(d); setFilterDays(new Set()); setFilterMonth(""); }}
+              />
             </div>
           )}
 
@@ -1371,7 +1485,7 @@ export default function Home() {
           )}
 
           <div className="mt-6 space-y-4">
-            {filteredWindows.map((window, wi) => {
+            {(showAllPrivate ? filteredWindows : filteredWindows.slice(0, 10)).map((window, wi) => {
               const totalAvailable = window.endMins - window.startMins;
               const sel = windowSelections[wi] || {
                 start: window.startMins,
@@ -1456,6 +1570,22 @@ export default function Home() {
                 </div>
               );
             })}
+            {!showAllPrivate && filteredWindows.length > 10 && (
+              <button
+                onClick={() => setShowAllPrivate(true)}
+                className="mt-2 w-full rounded-lg border border-brown-700 py-2 text-sm text-brown-400 hover:border-brown-500 hover:text-white transition"
+              >
+                View {filteredWindows.length - 10} more days ↓
+              </button>
+            )}
+            {showAllPrivate && filteredWindows.length > 10 && (
+              <button
+                onClick={() => setShowAllPrivate(false)}
+                className="mt-2 w-full rounded-lg border border-brown-700 py-2 text-sm text-brown-400 hover:border-brown-500 hover:text-white transition"
+              >
+                Show less ↑
+              </button>
+            )}
           </div>
         </div>
       </section>
