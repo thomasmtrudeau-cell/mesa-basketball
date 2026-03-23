@@ -40,9 +40,13 @@ export async function sendRegistrationNotification(data: {
   manageToken?: string;
   isFree?: boolean;
   isFirstTime?: boolean;
+  packageSessionsRemaining?: number;
+  packageType?: number;
   referralCode?: string;
 }) {
   const resend = getResend();
+
+  const isPackageBooking = data.packageSessionsRemaining !== undefined;
 
   const typeLabel =
     data.type === "camp"
@@ -61,7 +65,7 @@ export async function sendRegistrationNotification(data: {
   await resend.emails.send({
     from: FROM_EMAIL,
     to: ARTEMI_EMAIL,
-    subject: `New ${typeLabel}: ${data.parentName}${data.isFree ? " [FREE - LOYALTY REWARD]" : ""}`,
+    subject: `New ${typeLabel}: ${data.parentName}${isPackageBooking ? " [Monthly Package]" : ""}${data.isFree && !isPackageBooking ? " [50% OFF]" : ""}`,
     html: `
       <h2>New ${typeLabel}</h2>
       <p><strong>Parent:</strong> ${data.parentName}</p>
@@ -70,12 +74,20 @@ export async function sendRegistrationNotification(data: {
       <p><strong>Players:</strong> ${data.kids}</p>
       <p><strong>Session:</strong> ${formatSessionDetailsForEmail(data.sessionDetails)}</p>
       <p><strong>Total Participants:</strong> ${data.totalParticipants}</p>
-      ${data.isFree ? '<p><strong style="color: green;">LOYALTY REWARD: This session is FREE</strong></p>' : ""}
+      ${isPackageBooking ? `<p><strong>Package:</strong> ${data.packageType}-session monthly plan — ${data.packageSessionsRemaining} session${data.packageSessionsRemaining !== 1 ? "s" : ""} remaining after this booking</p>` : ""}
+      ${data.isFree && !isPackageBooking ? `<p><strong style="color: #d4af37;">${data.isFirstTime ? "First-Time Discount" : "Referral Credit"}: 50% off applied</strong></p>` : ""}
     `,
   });
 
   // Confirmation email to parent
-  const priceNote = data.isFree
+  const packageNote = isPackageBooking
+    ? `<p style="background: #162d5a; color: #d4af37; padding: 14px; border-radius: 8px; margin: 12px 0;">
+        <strong>This session is part of your ${data.packageType}-session monthly training package.</strong><br/>
+        <span style="font-size: 14px; opacity: 0.85;">You have <strong>${data.packageSessionsRemaining} session${data.packageSessionsRemaining !== 1 ? "s" : ""} remaining</strong> in your plan this month. Payment for your package was already arranged at enrollment — no additional payment is due for this session.</span>
+       </p>`
+    : "";
+
+  const priceNote = isPackageBooking || data.isFree
     ? ""
     : data.type === "private"
       ? "<p><strong>Rate:</strong> $150 (up to 3 participants)</p>"
@@ -83,14 +95,14 @@ export async function sendRegistrationNotification(data: {
         ? "<p><strong>Rate:</strong> $250 (4+ participants)</p>"
         : "";
 
-  const paymentNote = data.isFree
+  const paymentNote = isPackageBooking || data.isFree
     ? ""
     : "<p>Payments can be made via Zelle (<strong>artemios@mesabasketballtraining.com</strong>), Cash, or Venmo (<strong>@Artemios-Gavalas</strong>). Please provide at least 48 hours' notice if you need to cancel or reschedule a session. Rescheduling or canceling within 48 hours of the scheduled session will result in a 50% charge of the session fee.</p>";
 
-  const freeNote = data.isFree && data.isFirstTime
-    ? '<p style="background: #162d5a; color: #d4af37; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center;">First session discount applied — 50% off! Pay $75 (private) or $125 (group private) in person.</p>'
-    : data.isFree
-    ? '<p style="background: #162d5a; color: #d4af37; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center;">Referral credit applied — 50% off this session! Pay $75 (private) or $125 (group private) in person.</p>'
+  const freeNote = !isPackageBooking && data.isFree && data.isFirstTime
+    ? '<p style="background: #162d5a; color: #d4af37; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center;">First Session Discount Applied — 50% Off! Pay $75 (private) or $125 (group private) in person.</p>'
+    : !isPackageBooking && data.isFree
+    ? '<p style="background: #162d5a; color: #d4af37; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center;">Referral Credit Applied — 50% Off This Session! Pay $75 (private) or $125 (group private) in person.</p>'
     : "";
 
   const manageSection = `<p><a href="${BASE_URL}/my-bookings" style="color: #d4af37; font-weight: bold;">View My Bookings</a> — Manage, cancel, or reschedule your sessions</p>`;

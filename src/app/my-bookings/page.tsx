@@ -154,50 +154,46 @@ export default function MyBookings() {
         )}
 
         {/* Monthly Package Status Card */}
-        {activePackage && (
-          <div className="mt-6 rounded-2xl bg-brown-900 p-6">
-            <h2 className="text-lg font-bold">
-              Monthly Package —{" "}
-              {new Date(activePackage.monthYear + "-01").toLocaleDateString("en-US", {
-                month: "long",
-                year: "numeric",
-                timeZone: "UTC",
-              })}
-            </h2>
-            <div className="mt-4 space-y-3">
-              <p className="text-sm text-brown-300">
-                {activePackage.packageType}-session package
-              </p>
-              <div>
-                <div className="flex items-center justify-between text-sm mb-1">
-                  <span className="text-brown-400">
-                    {activePackage.sessionsUsed} used &middot;{" "}
-                    {activePackage.packageType - activePackage.sessionsUsed} remaining
-                  </span>
-                  <span className="text-brown-500 text-xs">
-                    {activePackage.sessionsUsed}/{activePackage.packageType}
-                  </span>
+        {activePackage && (() => {
+          const remaining = activePackage.packageType - activePackage.sessionsUsed;
+          const expiry = new Date(
+            new Date(activePackage.monthYear + "-01").getFullYear(),
+            new Date(activePackage.monthYear + "-01").getMonth() + 1,
+            0
+          ).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+          const monthLabel = new Date(activePackage.monthYear + "-01").toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+          return (
+            <div className="mt-6 rounded-2xl bg-brown-900 p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-bold">Monthly Training Package</h2>
+                  <p className="text-sm text-brown-400">{monthLabel} &middot; {activePackage.packageType} sessions</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-3xl font-bold text-mesa-accent">{remaining}</p>
+                  <p className="text-xs text-brown-400">session{remaining !== 1 ? "s" : ""} remaining</p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-xs text-brown-500 mb-1">
+                  <span>{activePackage.sessionsUsed} used</span>
+                  <span>{activePackage.packageType} total</span>
                 </div>
                 <div className="h-2 rounded-full bg-brown-700">
                   <div
                     className="h-2 rounded-full bg-mesa-accent transition-all"
-                    style={{
-                      width: `${Math.min(100, (activePackage.sessionsUsed / activePackage.packageType) * 100)}%`,
-                    }}
+                    style={{ width: `${Math.min(100, (activePackage.sessionsUsed / activePackage.packageType) * 100)}%` }}
                   />
                 </div>
               </div>
-              <p className="text-xs text-brown-500">
-                Sessions expire{" "}
-                {new Date(
-                  new Date(activePackage.monthYear + "-01").getFullYear(),
-                  new Date(activePackage.monthYear + "-01").getMonth() + 1,
-                  0
-                ).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-              </p>
+              {remaining === 0 ? (
+                <p className="mt-3 text-sm text-yellow-400/80">All sessions used — contact Artemios to enroll in next month&apos;s package.</p>
+              ) : (
+                <p className="mt-3 text-xs text-brown-500">Sessions expire {expiry}. Unused sessions do not carry over.</p>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {bookings !== null && bookings.length > 0 && (
           <div className="mt-6 space-y-4">

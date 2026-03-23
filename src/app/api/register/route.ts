@@ -112,6 +112,8 @@ export async function POST(req: NextRequest) {
     let manageToken: string | undefined;
     let isFree = false;
     let isFirstTime = false;
+    let packageSessionsRemaining: number | undefined;
+    let packageType: number | undefined;
     const referralCode = generateReferralCode(parentName);
 
     // Save to Supabase (unless this is an email-only request)
@@ -154,6 +156,8 @@ export async function POST(req: NextRequest) {
         const activePkg = await getActivePackage(email, bookingMonth);
         if (activePkg && activePkg.sessions_used < activePkg.package_type) {
           await incrementPackageSessions(activePkg.id, activePkg.sessions_used);
+          packageSessionsRemaining = activePkg.package_type - activePkg.sessions_used - 1;
+          packageType = activePkg.package_type;
         }
       }
 
@@ -182,6 +186,8 @@ export async function POST(req: NextRequest) {
         manageToken,
         isFree,
         isFirstTime,
+        packageSessionsRemaining,
+        packageType,
         referralCode: isPrivateType ? referralCode : undefined,
       });
     }
