@@ -249,18 +249,18 @@ function MiniCalendar({
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   return (
-    <div className="rounded-lg border border-brown-700 bg-brown-900/40 p-3 w-64 shrink-0">
-      <div className="flex items-center justify-between mb-2">
-        <button onClick={() => onMonthChange(new Date(Date.UTC(year, mon - 1, 1)))} className="text-brown-400 hover:text-white px-1 text-lg leading-none">‹</button>
-        <span className="text-sm font-medium">{month.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}</span>
-        <button onClick={() => onMonthChange(new Date(Date.UTC(year, mon + 1, 1)))} className="text-brown-400 hover:text-white px-1 text-lg leading-none">›</button>
+    <div className="rounded-lg border border-brown-700 bg-brown-900/40 p-2 w-48 shrink-0">
+      <div className="flex items-center justify-between mb-1">
+        <button onClick={() => onMonthChange(new Date(Date.UTC(year, mon - 1, 1)))} className="text-brown-400 hover:text-white px-1 leading-none">‹</button>
+        <span className="text-xs font-medium">{month.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" })}</span>
+        <button onClick={() => onMonthChange(new Date(Date.UTC(year, mon + 1, 1)))} className="text-brown-400 hover:text-white px-1 leading-none">›</button>
       </div>
-      <div className="grid grid-cols-7 text-center mb-1">
-        {["Su","Mo","Tu","We","Th","Fr","Sa"].map((d) => (
-          <span key={d} className="text-xs text-brown-600">{d}</span>
+      <div className="grid grid-cols-7 text-center mb-0.5">
+        {["S","M","T","W","T","F","S"].map((d, i) => (
+          <span key={i} className="text-[10px] text-brown-600">{d}</span>
         ))}
       </div>
-      <div className="grid grid-cols-7 text-center gap-y-1">
+      <div className="grid grid-cols-7 text-center gap-y-0.5">
         {cells.map((day, i) => {
           if (!day) return <span key={i} />;
           const cellDate = new Date(Date.UTC(year, mon, day));
@@ -273,7 +273,7 @@ function MiniCalendar({
               key={i}
               disabled={!hasSlot}
               onClick={() => onSelectDate(isSelected ? null : dateStr)}
-              className={`text-xs rounded-full w-7 h-7 mx-auto flex items-center justify-center transition ${
+              className={`text-[10px] rounded-full w-5 h-5 mx-auto flex items-center justify-center transition ${
                 isSelected ? "bg-mesa-accent text-white font-bold" :
                 hasSlot ? "bg-brown-700 text-white hover:bg-brown-600 font-medium cursor-pointer" :
                 isPast ? "text-brown-800 cursor-default" :
