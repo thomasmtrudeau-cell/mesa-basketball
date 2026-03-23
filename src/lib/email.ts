@@ -62,7 +62,7 @@ export async function sendRegistrationNotification(data: {
     : null;
 
   // Email to Artemi
-  await resend.emails.send({
+  const adminResult = await resend.emails.send({
     from: FROM_EMAIL,
     to: ARTEMI_EMAIL,
     subject: `New ${typeLabel}: ${data.parentName}${isPackageBooking ? " [Monthly Package]" : ""}${data.isFree && !isPackageBooking ? " [50% OFF]" : ""}`,
@@ -78,6 +78,7 @@ export async function sendRegistrationNotification(data: {
       ${data.isFree && !isPackageBooking ? `<p><strong style="color: #d4af37;">${data.isFirstTime ? "First-Time Discount" : "Referral Credit"}: 50% off applied</strong></p>` : ""}
     `,
   });
+  if (adminResult.error) console.error("Resend admin email error:", adminResult.error);
 
   // Confirmation email to parent
   const packageNote = isPackageBooking
@@ -111,7 +112,7 @@ export async function sendRegistrationNotification(data: {
     ? `<p style="background: #162d5a; padding: 12px; border-radius: 8px; margin-top: 12px; color: #ffffff;"><strong style="color: #d4af37;">Your referral code: ${data.referralCode}</strong><br/><span style="font-size: 13px; color: #93c5fd;">Share it with friends — when they book their first session, you both earn credit toward a free session.</span></p>`
     : "";
 
-  await resend.emails.send({
+  const clientResult = await resend.emails.send({
     from: FROM_EMAIL,
     to: data.email,
     subject: data.isFree
@@ -134,6 +135,7 @@ export async function sendRegistrationNotification(data: {
       <p>— Mesa Basketball Training</p>
     `,
   });
+  if (clientResult.error) console.error("Resend client email error:", clientResult.error, "to:", data.email);
 }
 
 export async function sendCancellationNotification(data: {

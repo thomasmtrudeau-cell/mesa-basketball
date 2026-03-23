@@ -152,8 +152,11 @@ export async function POST(req: NextRequest) {
 
       // If booking a private session with a booked_date, check for active package
       if (isPrivateType && bookedDate && !emailOnly) {
-        const bookingMonth = bookedDate.substring(0, 7); // "2026-03"
-        const activePkg = await getActivePackage(email, bookingMonth);
+        const d = new Date(bookedDate);
+        const bookingMonth = isNaN(d.getTime())
+          ? null
+          : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const activePkg = bookingMonth ? await getActivePackage(email, bookingMonth) : null;
         if (activePkg && activePkg.sessions_used < activePkg.package_type) {
           await incrementPackageSessions(activePkg.id, activePkg.sessions_used);
           packageSessionsRemaining = activePkg.package_type - activePkg.sessions_used - 1;
