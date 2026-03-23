@@ -66,7 +66,7 @@ export async function sendRegistrationNotification(data: {
       <p><strong>Parent:</strong> ${data.parentName}</p>
       <p><strong>Email:</strong> ${data.email}</p>
       <p><strong>Phone:</strong> ${data.phone}</p>
-      <p><strong>Kids:</strong> ${data.kids}</p>
+      <p><strong>Players:</strong> ${data.kids}</p>
       <p><strong>Session:</strong> ${formatSessionDetailsForEmail(data.sessionDetails)}</p>
       <p><strong>Total Participants:</strong> ${data.totalParticipants}</p>
       ${data.isFree ? '<p><strong style="color: green;">LOYALTY REWARD: This session is FREE</strong></p>' : ""}
@@ -107,7 +107,7 @@ export async function sendRegistrationNotification(data: {
       <p>Hi ${data.parentName},</p>
       <p>Your ${typeLabel.toLowerCase()} has been confirmed.</p>
       <p><strong>Session:</strong> ${formatSessionDetailsForEmail(data.sessionDetails)}</p>
-      <p><strong>Kids:</strong> ${data.kids}</p>
+      <p><strong>Players:</strong> ${data.kids}</p>
       ${freeNote}
       ${priceNote}
       ${paymentNote}

@@ -249,18 +249,18 @@ function MiniCalendar({
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   return (
-    <div className="rounded-lg border border-brown-700 bg-brown-900/40 p-2 w-48 shrink-0">
-      <div className="flex items-center justify-between mb-1">
-        <button onClick={() => onMonthChange(new Date(Date.UTC(year, mon - 1, 1)))} className="text-brown-400 hover:text-white px-1 leading-none">‹</button>
-        <span className="text-xs font-medium">{month.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" })}</span>
-        <button onClick={() => onMonthChange(new Date(Date.UTC(year, mon + 1, 1)))} className="text-brown-400 hover:text-white px-1 leading-none">›</button>
+    <div className="rounded-lg border border-brown-700 bg-brown-900/40 p-4 w-72">
+      <div className="flex items-center justify-between mb-3">
+        <button onClick={() => onMonthChange(new Date(Date.UTC(year, mon - 1, 1)))} className="text-brown-400 hover:text-white px-2 text-lg leading-none">‹</button>
+        <span className="text-sm font-semibold">{month.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}</span>
+        <button onClick={() => onMonthChange(new Date(Date.UTC(year, mon + 1, 1)))} className="text-brown-400 hover:text-white px-2 text-lg leading-none">›</button>
       </div>
-      <div className="grid grid-cols-7 text-center mb-0.5">
-        {["S","M","T","W","T","F","S"].map((d, i) => (
-          <span key={i} className="text-[10px] text-brown-600">{d}</span>
+      <div className="grid grid-cols-7 text-center mb-2">
+        {["Su","Mo","Tu","We","Th","Fr","Sa"].map((d) => (
+          <span key={d} className="text-xs text-brown-500 font-medium">{d}</span>
         ))}
       </div>
-      <div className="grid grid-cols-7 text-center gap-y-0.5">
+      <div className="grid grid-cols-7 text-center gap-y-1">
         {cells.map((day, i) => {
           if (!day) return <span key={i} />;
           const cellDate = new Date(Date.UTC(year, mon, day));
@@ -273,7 +273,7 @@ function MiniCalendar({
               key={i}
               disabled={!hasSlot}
               onClick={() => onSelectDate(isSelected ? null : dateStr)}
-              className={`text-[10px] rounded-full w-5 h-5 mx-auto flex items-center justify-center transition ${
+              className={`text-xs rounded-full w-8 h-8 mx-auto flex items-center justify-center transition ${
                 isSelected ? "bg-mesa-accent text-white font-bold" :
                 hasSlot ? "bg-brown-700 text-white hover:bg-brown-600 font-medium cursor-pointer" :
                 isPast ? "text-brown-800 cursor-default" :
@@ -1060,7 +1060,7 @@ export default function Home() {
         <div className="mx-auto max-w-5xl px-6">
           <h2 className="text-center text-3xl font-bold">Group Sessions</h2>
           <p className="mt-2 text-center text-brown-400">
-            Skill work in groups of up to six kids. Select 2+ sessions to register — volume discounts available.
+            Skill work in groups of up to six players. Select 2+ sessions to register — volume discounts available.
           </p>
           <p className="mt-2 text-center text-xs text-brown-500">
             Groups are organized by grade as a guideline. If your child plays up or you&apos;re unsure which group fits best, contact Artemios at (631) 599-1280 or artemios@mesabasketballtraining.com — we&apos;ll find the right fit.
@@ -1355,7 +1355,7 @@ export default function Home() {
             </div>
             <div className="rounded-lg bg-brown-800/60 px-4 py-2 text-center">
               <p className="text-lg font-bold text-mesa-accent">$250 / 60 min</p>
-              <p className="text-xs text-brown-400">Group Private (4+ kids)</p>
+              <p className="text-xs text-brown-400">Group Private (4+ players)</p>
             </div>
           </div>
           <p className="mt-2 text-center text-sm text-brown-500">
@@ -1420,38 +1420,21 @@ export default function Home() {
 
           {/* Filters */}
           {timeWindows.length > 0 && (
-            <div className="relative mt-6 flex flex-wrap gap-6 items-start">
-              {/* Left: day + month filters */}
-              <div className="flex-1 min-w-48 space-y-3">
-                {/* Day of week pills */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs text-brown-500 mr-1">Day:</span>
-                  {availableDays.map((day) => (
-                    <button
-                      key={day}
-                      onClick={() => { setFilterDays((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(day)) next.delete(day);
-                        else next.add(day);
-                        return next;
-                      }); setCalendarSelectedDate(null); }}
-                      className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                        filterDays.has(day)
-                          ? "bg-mesa-accent text-white"
-                          : "bg-brown-800 text-brown-400 hover:bg-brown-700"
-                      }`}
-                    >
-                      {DAY_LABELS[day]}
-                    </button>
-                  ))}
-                  {filterDays.size > 0 && (
-                    <button
-                      onClick={() => setFilterDays(new Set())}
-                      className="text-xs text-brown-500 hover:text-brown-400"
-                    >
-                      Clear
-                    </button>
-                  )}
+            <div className="relative mt-6">
+              <div className="flex flex-wrap gap-4 items-center">
+                {/* Day dropdown */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-brown-500">Day:</span>
+                  <select
+                    value={filterDays.size === 1 ? Array.from(filterDays)[0] : ""}
+                    onChange={(e) => { setFilterDays(e.target.value !== "" ? new Set([parseInt(e.target.value)]) : new Set()); setCalendarSelectedDate(null); }}
+                    className="rounded-lg border border-brown-700 bg-brown-800 px-3 py-1 text-sm text-white focus:border-mesa-accent focus:outline-none"
+                  >
+                    <option value="">All days</option>
+                    {availableDays.map((day) => (
+                      <option key={day} value={day}>{DAY_LABELS[day]}</option>
+                    ))}
+                  </select>
                 </div>
                 {/* Month dropdown */}
                 <div className="flex items-center gap-2">
@@ -1467,9 +1450,7 @@ export default function Home() {
                     ))}
                   </select>
                 </div>
-              </div>
-              {/* Right: calendar toggle */}
-              <div className="shrink-0">
+                {/* Calendar toggle button */}
                 <button
                   onClick={() => setShowCalendar((v) => !v)}
                   className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
@@ -1486,18 +1467,19 @@ export default function Home() {
                     >✕</span>
                   )}
                 </button>
-                {showCalendar && (
-                  <div className="absolute z-10 mt-1">
-                    <MiniCalendar
-                      month={calendarMonth}
-                      onMonthChange={setCalendarMonth}
-                      highlightedDates={calendarHighlightedDates}
-                      selectedDate={calendarSelectedDate}
-                      onSelectDate={(d) => { setCalendarSelectedDate(d); setFilterDays(new Set()); setFilterMonth(""); setShowCalendar(false); }}
-                    />
-                  </div>
-                )}
               </div>
+              {/* Calendar dropdown — centered below filters */}
+              {showCalendar && (
+                <div className="mt-3 flex justify-center">
+                  <MiniCalendar
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
+                    highlightedDates={calendarHighlightedDates}
+                    selectedDate={calendarSelectedDate}
+                    onSelectDate={(d) => { setCalendarSelectedDate(d); setFilterDays(new Set()); setFilterMonth(""); setShowCalendar(false); }}
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -1754,9 +1736,9 @@ export default function Home() {
 
                 <div>
                   <div className="mb-2 flex items-center justify-between">
-                    <label className="text-sm font-medium text-brown-300">Kid(s)</label>
+                    <label className="text-sm font-medium text-brown-300">Player(s)</label>
                     <button type="button" onClick={addKid} className="text-sm text-mesa-accent hover:text-yellow-300">
-                      + Add another kid
+                      + Add another player
                     </button>
                   </div>
                   {kids.map((kid, i) => (
@@ -1928,7 +1910,7 @@ export default function Home() {
                       }`}
                     >
                       Private ($150/hr)
-                      <span className="block text-xs font-normal">Up to 3 kids</span>
+                      <span className="block text-xs font-normal">Up to 3 players</span>
                     </button>
                     <button
                       type="button"
@@ -1940,7 +1922,7 @@ export default function Home() {
                       }`}
                     >
                       Group ($250/hr)
-                      <span className="block text-xs font-normal">4+ kids</span>
+                      <span className="block text-xs font-normal">4+ players</span>
                     </button>
                   </div>
                 )}

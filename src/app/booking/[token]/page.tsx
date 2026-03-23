@@ -336,7 +336,7 @@ export default function ManageBooking({
             <>
               <div className="mt-4 space-y-2">
                 <p><span className="text-brown-400">Session:</span> {formatSessionDetails(booking.sessionDetails)}</p>
-                <p><span className="text-brown-400">Kids:</span> {booking.kids}</p>
+                <p><span className="text-brown-400">Players:</span> {booking.kids}</p>
                 <p><span className="text-brown-400">Type:</span> {booking.type === "group-private" ? "Group Private" : "Private"}</p>
               </div>
 

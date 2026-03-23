@@ -245,7 +245,7 @@ export default function MyBookings() {
                       </p>
                       <div className="mt-2 space-y-1 text-sm">
                         <p className="text-brown-400">
-                          <span className="text-brown-500">Kids:</span>{" "}
+                          <span className="text-brown-500">Players:</span>{" "}
                           {b.kids}
                         </p>
                         <p className="text-brown-400">
