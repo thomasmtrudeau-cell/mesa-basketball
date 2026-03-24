@@ -928,20 +928,20 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-mesa-dark text-white">
       {/* Sticky Nav */}
-      <nav className="sticky top-0 z-50 border-b border-brown-800 bg-mesa-dark/95 backdrop-blur">
+      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-          <a href="#" className="flex items-center gap-2 text-lg font-bold text-white">
+          <a href="#" className="flex items-center gap-2 text-lg font-bold text-mesa-dark">
             <img src="/logo.jpeg" alt="Mesa Basketball Logo" className="h-10 w-10 rounded-full object-cover" />
             <span className="hidden sm:inline">ΜΕΣΑ BASKETBALL</span>
           </a>
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-4 text-sm">
-            <a href="#schedule" className="text-brown-300 hover:text-white">Schedule</a>
-            <a href="#camps" className="text-brown-300 hover:text-white">Camps</a>
-            <a href="#private" className="text-brown-300 hover:text-white">Private Sessions</a>
-            <a href="/about" className="text-brown-300 hover:text-white">About</a>
+            <a href="#schedule" className="text-brown-600 hover:text-mesa-dark">Schedule</a>
+            <a href="#camps" className="text-brown-600 hover:text-mesa-dark">Camps</a>
+            <a href="#private" className="text-brown-600 hover:text-mesa-dark">Private Sessions</a>
+            <a href="/about" className="text-brown-600 hover:text-mesa-dark">About</a>
             <a href="/my-bookings" className="rounded bg-mesa-accent/20 px-3 py-1 text-mesa-accent hover:bg-mesa-accent/30">My Bookings</a>
-            <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-brown-300 hover:text-white">
+            <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-brown-600 hover:text-mesa-dark">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
                 <circle cx="12" cy="12" r="4" />
@@ -951,7 +951,7 @@ export default function Home() {
           </div>
           {/* Mobile hamburger */}
           <button
-            className="md:hidden text-brown-300 hover:text-white p-1"
+            className="md:hidden text-brown-600 hover:text-mesa-dark p-1"
             onClick={() => setMobileMenuOpen((o) => !o)}
             aria-label="Toggle menu"
           >
@@ -968,12 +968,12 @@ export default function Home() {
         </div>
         {/* Mobile dropdown menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-brown-800 bg-mesa-dark/98 px-6 py-4 space-y-4 text-sm">
-            <a href="#schedule" onClick={() => setMobileMenuOpen(false)} className="block text-brown-300 hover:text-white py-1">Schedule</a>
-            <a href="#camps" onClick={() => setMobileMenuOpen(false)} className="block text-brown-300 hover:text-white py-1">Camps</a>
-            <a href="#private" onClick={() => setMobileMenuOpen(false)} className="block text-brown-300 hover:text-white py-1">Private Sessions</a>
-            <a href="/about" onClick={() => setMobileMenuOpen(false)} className="block text-brown-300 hover:text-white py-1">About</a>
-            <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-brown-300 hover:text-white py-1">
+          <div className="md:hidden border-t border-gray-200 bg-white px-6 py-4 space-y-4 text-sm">
+            <a href="#schedule" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Schedule</a>
+            <a href="#camps" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Camps</a>
+            <a href="#private" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Private Sessions</a>
+            <a href="/about" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">About</a>
+            <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-brown-600 hover:text-mesa-dark py-1">
               Instagram
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
