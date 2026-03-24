@@ -325,7 +325,7 @@ export default function Home() {
   const [parentName, setParentName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [smsConsent, setSmsConsent] = useState(false);
+  const [smsConsent, setSmsConsent] = useState(true);
   const [kids, setKids] = useState([{ name: "", dob: "", grade: "" }]);
   const [isGroupRate, setIsGroupRate] = useState(false);
   const [hideUpsell, setHideUpsell] = useState(false);
@@ -526,7 +526,7 @@ export default function Home() {
     setParentName("");
     setEmail("");
     setPhone("");
-    setSmsConsent(false);
+    setSmsConsent(true);
     setKids([{ name: "", dob: "", grade: "" }]);
     setIsGroupRate(false);
     setUpsellExtra(0);
@@ -539,7 +539,7 @@ export default function Home() {
     setParentName("");
     setEmail("");
     setPhone("");
-    setSmsConsent(false);
+    setSmsConsent(true);
     setKids([{ name: "", dob: "", grade: "" }]);
     setIsGroupRate(false);
     setUpsellExtra(0);
@@ -953,7 +953,7 @@ export default function Home() {
     setParentName("");
     setEmail("");
     setPhone("");
-    setSmsConsent(false);
+    setSmsConsent(true);
     setKids([{ name: "", dob: "", grade: "" }]);
     setIsGroupRate(false);
     setUpsellExtra(0);
