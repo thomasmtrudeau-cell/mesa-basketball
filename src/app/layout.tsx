@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     description: "Elite basketball training on Long Island. Group sessions, private training, and mini camps.",
     url: "https://mesabasketballtraining.com",
     siteName: "Mesa Basketball Training",
-    images: [{ url: "/logo.png" }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
   },
 };
 
