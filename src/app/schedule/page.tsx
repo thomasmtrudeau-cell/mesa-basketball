@@ -1519,7 +1519,7 @@ export default function Home() {
           )}
 
           <div className="mt-6 space-y-4">
-            {(showAllPrivate ? filteredWindows : filteredWindows.slice(0, 10)).map((window, wi) => {
+            {(showAllPrivate ? filteredWindows : filteredWindows.slice(0, 3)).map((window, wi) => {
               const totalAvailable = window.endMins - window.startMins;
               const sel = windowSelections[wi] || {
                 start: window.startMins,
@@ -1604,15 +1604,15 @@ export default function Home() {
                 </div>
               );
             })}
-            {!showAllPrivate && filteredWindows.length > 10 && (
+            {!showAllPrivate && filteredWindows.length > 3 && (
               <button
                 onClick={() => setShowAllPrivate(true)}
                 className="mt-2 w-full rounded-lg border border-brown-700 py-2 text-sm text-brown-400 hover:border-brown-500 hover:text-white transition"
               >
-                View {filteredWindows.length - 10} more days ↓
+                View {filteredWindows.length - 3} more days ↓
               </button>
             )}
-            {showAllPrivate && filteredWindows.length > 10 && (
+            {showAllPrivate && filteredWindows.length > 3 && (
               <button
                 onClick={() => setShowAllPrivate(false)}
                 className="mt-2 w-full rounded-lg border border-brown-700 py-2 text-sm text-brown-400 hover:border-brown-500 hover:text-white transition"
