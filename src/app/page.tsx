@@ -63,8 +63,39 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* The Approach */}
+      <section className="bg-brown-950 border-t border-brown-800 py-16 md:py-24">
+        <div className="mx-auto max-w-4xl px-6">
+          <div className="text-center mb-10">
+            <p className="text-sm font-semibold uppercase tracking-widest text-mesa-accent mb-2">What Sets Mesa Apart</p>
+            <h2 className="font-[family-name:var(--font-fira-cond)] text-4xl font-black tracking-wide">THE APPROACH</h2>
+          </div>
+          <div className="grid gap-8 md:grid-cols-3 text-center">
+            {[
+              {
+                heading: "We Teach the Game",
+                body: "Every session is built around understanding why each skill matters, not just running drills. Players learn how it translates to real game situations.",
+              },
+              {
+                heading: "Real Development",
+                body: "No shortcuts, no gimmicks. Just consistent, intentional work designed to produce results on the court and develop character off of it.",
+              },
+              {
+                heading: "Beyond Basketball",
+                body: "Dedication, discipline, and showing up when it is hard. The lessons players take from Mesa carry into every area of their lives.",
+              },
+            ].map((item) => (
+              <div key={item.heading} className="rounded-xl border border-brown-700 bg-brown-900/40 px-6 py-8">
+                <p className="font-[family-name:var(--font-fira-cond)] text-xl font-black tracking-wide text-mesa-accent mb-3">{item.heading}</p>
+                <p className="text-sm text-brown-400 leading-relaxed">{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* What We Offer */}
-      <section className="bg-gradient-to-b from-mesa-dark to-brown-950 py-16 md:py-24">
+      <section className="bg-gradient-to-b from-brown-950 to-mesa-dark py-16 md:py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="text-center mb-12">
             <p className="text-sm font-semibold uppercase tracking-widest text-mesa-accent mb-2">Programs</p>

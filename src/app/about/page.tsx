@@ -125,32 +125,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Training philosophy */}
-        <section>
-          <h2 className="font-[family-name:var(--font-fira-cond)] text-3xl font-black tracking-wide text-mesa-accent mb-6">
-            THE APPROACH
-          </h2>
-          <div className="space-y-5 text-brown-200 leading-relaxed text-[17px]">
-            <p>
-              Great trainers don&apos;t just run drills. They teach the game. Every session I run is thoughtfully
-              designed with creativity and purpose. The goal is not to go through the motions. It is to understand{" "}
-              <em>why</em> each skill matters and how it translates to live game situations. That kind of intentional
-              training is what separates players who look good in drills from players who perform when it counts.
-            </p>
-            <p>
-              I bring a point guard&apos;s mind to every session, reading situations, making adjustments, and
-              finding the right way to connect with each athlete individually. Whether I&apos;m working with a
-              beginner or a seasoned player, the energy in the gym stays high, the expectations stay real, and the
-              creativity keeps players engaged and progressing.
-            </p>
-            <p>
-              The lessons go beyond basketball. Dedication, consistency, showing up when it is hard, and chasing
-              your goals with discipline are values that carry athletes far beyond the court and into every area
-              of their lives. I&apos;m committed to developing people, not just players.
-            </p>
-          </div>
-        </section>
-
         {/* Stats / highlights */}
         <section>
           <div className="grid gap-6 sm:grid-cols-3 text-center">
