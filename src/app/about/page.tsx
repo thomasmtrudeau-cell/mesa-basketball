@@ -125,60 +125,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Stats / highlights */}
-        <section>
-          <div className="grid gap-6 sm:grid-cols-3 text-center">
-            {[
-              { stat: "5+", label: "Years Training Athletes" },
-              { stat: "4 yrs to Pro", label: "Ages Trained" },
-              { stat: "D1 + Pro", label: "Playing Pedigree" },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="rounded-lg border border-brown-700 bg-brown-900/40 px-6 py-8"
-              >
-                <p className="font-[family-name:var(--font-fira-cond)] text-4xl font-black text-mesa-accent">
-                  {item.stat}
-                </p>
-                <p className="mt-2 text-sm text-brown-400 font-medium uppercase tracking-wide">
-                  {item.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* What we offer */}
-        <section>
-          <h2 className="font-[family-name:var(--font-fira-cond)] text-3xl font-black tracking-wide text-mesa-accent mb-6">
-            WHAT WE OFFER
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
-              {
-                title: "Group Sessions",
-                desc: "Structured skill development in a competitive small-group setting. Players push each other, learn together, and leave better every single time.",
-              },
-              {
-                title: "Mini Camps",
-                desc: "Intensive multi-day programs built for accelerated development. High reps, high energy, and focused training blocks designed to elevate your game fast.",
-              },
-              {
-                title: "Private Training",
-                desc: "One-on-one or small group sessions completely tailored to your individual goals. Maximum attention, maximum growth.",
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-lg border border-brown-700 bg-brown-900/40 px-6 py-6"
-              >
-                <p className="font-semibold text-white text-lg mb-2">{item.title}</p>
-                <p className="text-sm text-brown-400 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* CTA */}
         <section className="rounded-xl border border-brown-700 bg-brown-900/40 px-8 py-10 text-center">
           <h2 className="font-[family-name:var(--font-fira-cond)] text-3xl font-black tracking-wide mb-3">
