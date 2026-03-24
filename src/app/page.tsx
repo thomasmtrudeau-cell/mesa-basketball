@@ -2064,7 +2064,9 @@ export default function Home() {
                 <div>
                   <div className="mb-2 flex items-center justify-between">
                     <label className="text-sm font-medium text-brown-300">Player(s)</label>
-                    <button type="button" onClick={addKid} className="text-sm text-mesa-accent hover:text-yellow-300">+ Add another player</button>
+                    {kids.length < 3 && (
+                      <button type="button" onClick={addKid} className="text-sm text-mesa-accent hover:text-yellow-300">+ Add another player</button>
+                    )}
                   </div>
                   {kids.map((kid, i) => (
                     <div key={i} className="mb-3 flex flex-col gap-2">
@@ -2120,16 +2122,6 @@ export default function Home() {
                       </div>
                     </div>
                   ))}
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-brown-300">Referral Code <span className="text-brown-500 font-normal">(optional)</span></label>
-                  <input
-                    type="text"
-                    value={referralCode}
-                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                    placeholder="e.g. SMITH-MESA"
-                    className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white placeholder-brown-500 focus:border-mesa-accent focus:outline-none"
-                  />
                 </div>
                 {pkgResult && !pkgResult.success && (
                   <p className="text-sm text-red-400">{pkgResult.message}</p>
