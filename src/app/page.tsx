@@ -368,6 +368,7 @@ export default function Home() {
   const [pkgMonth, setPkgMonth] = useState("");
   const [pkgSubmitting, setPkgSubmitting] = useState(false);
   const [pkgResult, setPkgResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [showReferralInfo, setShowReferralInfo] = useState(false);
 
   useEffect(() => {
     fetch("/api/schedule")
@@ -1427,6 +1428,7 @@ export default function Home() {
             <p className="mt-1 text-center text-sm text-brown-400">
               Commit to a full month of training and save — private sessions only.
             </p>
+            <p className="mt-1 text-center text-xs text-brown-500">Up to 3 players per package.</p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {/* 4-session */}
               <div className="rounded-xl border border-brown-700 bg-brown-900/40 p-5 text-center">
@@ -1874,7 +1876,32 @@ export default function Home() {
                 {/* Referral Code */}
                 {(modal.type === "private" || modal.type === "group-private" || modal.type === "weekly") && (
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-brown-300">Referral Code <span className="text-brown-500 font-normal">(optional)</span></label>
+                    <div className="mb-1 flex items-center gap-2">
+                      <label className="text-sm font-medium text-brown-300">Referral Code <span className="text-brown-500 font-normal">(optional)</span></label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setShowReferralInfo((v) => !v)}
+                          className="flex h-4 w-4 items-center justify-center rounded-full border border-brown-500 text-brown-400 hover:border-mesa-accent hover:text-mesa-accent text-[10px] font-bold leading-none"
+                          aria-label="Referral code info"
+                        >
+                          i
+                        </button>
+                        {showReferralInfo && (
+                          <div className="absolute left-6 top-0 z-10 w-64 rounded-lg border border-brown-700 bg-brown-900 p-3 text-xs text-brown-300 shadow-xl">
+                            <p className="font-semibold text-white mb-1">How referrals work</p>
+                            <p>If someone referred you to Mesa, enter their referral code here. Both you and the referrer get credit toward a free session after your first booking. Ask your referrer for their code if you don&apos;t have it.</p>
+                            <button
+                              type="button"
+                              onClick={() => setShowReferralInfo(false)}
+                              className="mt-2 text-mesa-accent hover:text-yellow-300"
+                            >
+                              Got it
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                     <input
                       type="text"
                       value={referralCode}
