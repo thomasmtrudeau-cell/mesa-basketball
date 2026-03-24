@@ -931,7 +931,7 @@ export default function Home() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <a href="#" className="flex items-center gap-2 text-lg font-bold text-mesa-dark">
-            <img src="/logo.jpeg" alt="Mesa Basketball Logo" className="h-10 w-10 rounded-full object-cover" />
+            <img src="/logo.png" alt="Mesa Basketball Logo" className="h-14 w-14 object-contain" />
             <span className="hidden sm:inline">ΜΕΣΑ BASKETBALL</span>
           </a>
           {/* Desktop nav */}
