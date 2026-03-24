@@ -54,7 +54,7 @@ export default function LandingPage() {
             <blockquote className="text-brown-200 text-xl md:text-2xl leading-relaxed italic">
               &ldquo;I started Mesa because I wanted to give players access to the kind of training and mentorship
               that shaped me. If I can take everything I&apos;ve learned from some of the best programs and coaches
-              in the world and pass that on to kids in my own community, that&apos;s the whole point.&rdquo;
+              in the world and pass that on to players in my own community, that&apos;s the whole point.&rdquo;
             </blockquote>
             <p className="mt-4 text-mesa-accent font-semibold text-sm uppercase tracking-widest">
               Artemios Gavalas &mdash; Founder, Mesa Basketball Training
