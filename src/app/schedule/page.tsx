@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
 
 const LOCATION_LINKS: Record<string, { name: string; url: string }> = {
   "St. Pauls": { name: "St. Paul's Cathedral", url: "https://share.google/kgiqMxAj2iAFEAGI6" },
@@ -1018,110 +1017,19 @@ export default function Home() {
         )}
       </nav>
 
-      {/* Hero */}
-      <header className="relative overflow-hidden bg-gradient-to-br from-mesa-dark via-brown-900 to-brown-800">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-          <div className="flex flex-col items-center text-center">
-            <h1 className="font-[family-name:var(--font-fira-cond)] text-5xl font-black tracking-wide md:text-7xl">
-              ΜΕΣΑ BASKETBALL TRAINING
-            </h1>
-            <p className="mt-4 text-lg text-brown-300 md:text-xl">
-              With Former Division I Player{" "}
-              <span className="font-semibold text-mesa-accent">
-                Artemios Gavalas
-              </span>
-            </p>
-            <p className="mt-2 text-brown-400">
-              St. John&apos;s &bull; Butler &bull; Professional (Greece)
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <a
-                href="#schedule"
-                className="rounded-lg bg-mesa-accent px-6 py-3 font-semibold text-white transition hover:bg-yellow-600"
-              >
-                Group Schedule
-              </a>
-              <a
-                href="#camps"
-                className="rounded-lg border border-brown-500 px-6 py-3 font-semibold text-brown-200 transition hover:bg-brown-800"
-              >
-                Mini Camps
-              </a>
-              <a
-                href="#private"
-                className="rounded-lg border border-brown-500 px-6 py-3 font-semibold text-brown-200 transition hover:bg-brown-800"
-              >
-                Book Private Session
-              </a>
-            </div>
-          </div>
-        </div>
-        {/* Photo row */}
-        <div className="mx-auto flex max-w-2xl justify-center gap-4 px-6 pb-12">
-          <div className="relative w-1/2 overflow-hidden rounded-xl" style={{aspectRatio: "3/4"}}>
-            <Image
-              src="/photo1.jpg"
-              alt="Artemios Gavalas at St. John's"
-              fill
-              className="object-cover"
-              style={{ objectPosition: "center 35%" }}
-              priority
-            />
-          </div>
-          <div className="relative w-1/2 overflow-hidden rounded-xl" style={{aspectRatio: "3/4"}}>
-            <Image
-              src="/photo2.jpg"
-              alt="Artemios Gavalas at Butler"
-              fill
-              className="object-cover object-top"
-              priority
-            />
-          </div>
+      {/* Page Header */}
+      <header className="border-b border-brown-800 bg-mesa-dark px-6 py-8">
+        <div className="mx-auto max-w-6xl">
+          <p className="text-sm font-semibold uppercase tracking-widest text-mesa-accent mb-1">Mesa Basketball Training</p>
+          <h1 className="font-[family-name:var(--font-fira-cond)] text-3xl font-black tracking-wide md:text-4xl">
+            SCHEDULE &amp; BOOK
+          </h1>
+          <p className="mt-2 text-brown-400 text-sm">
+            Browse available sessions below and register online. Questions? Call or text{" "}
+            <a href="tel:6315991280" className="text-mesa-accent hover:text-yellow-400">(631) 599-1280</a>.
+          </p>
         </div>
       </header>
-
-      {/* What to Expect */}
-      <section className="bg-brown-900/50 py-16">
-        <div className="mx-auto max-w-4xl px-6 text-center">
-          <h2 className="font-[family-name:var(--font-oswald)] text-3xl font-bold tracking-wide">What to Expect</h2>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            <div className="rounded-xl bg-brown-800/60 p-6">
-              <div className="mb-4 flex justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-              </div>
-              <h3 className="font-semibold text-mesa-accent">Skill Development</h3>
-              <p className="mt-2 text-sm text-brown-300">
-                Expert guidance on shooting, dribbling, ball handling & more
-              </p>
-            </div>
-            <div className="rounded-xl bg-brown-800/60 p-6">
-              <div className="mb-4 flex justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              </div>
-              <h3 className="font-semibold text-mesa-accent">High Energy Drills</h3>
-              <p className="mt-2 text-sm text-brown-300">
-                Build confidence, skill, and game IQ through competitive drills
-              </p>
-            </div>
-            <div className="rounded-xl bg-brown-800/60 p-6">
-              <div className="mb-4 flex justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-              </div>
-              <h3 className="font-semibold text-mesa-accent">D1 Experience</h3>
-              <p className="mt-2 text-sm text-brown-300">
-                Knowledge from playing at St. John&apos;s, Butler, and professionally in Greece
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="flex items-center justify-center gap-3 py-2">
-        <div className="h-px w-16 bg-mesa-accent/25" />
-        <div className="h-1.5 w-1.5 rotate-45 bg-mesa-accent/50" />
-        <div className="h-px w-16 bg-mesa-accent/25" />
-      </div>
 
       {/* Weekly Schedule */}
       <section id="schedule" className="py-16">
