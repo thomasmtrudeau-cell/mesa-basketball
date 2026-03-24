@@ -350,6 +350,7 @@ export default function Home() {
   }, []);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [schedulingOpen, setSchedulingOpen] = useState(false);
 
   const [recurringWeeks, setRecurringWeeks] = useState<
     { date: string; startTime: string; endTime: string; location: string; selected: boolean }[]
@@ -943,9 +944,19 @@ export default function Home() {
           </a>
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-4 text-sm">
-            <a href="#schedule" className="text-brown-600 hover:text-mesa-dark">Schedule</a>
-            <a href="#camps" className="text-brown-600 hover:text-mesa-dark">Camps</a>
-            <a href="#private" className="text-brown-600 hover:text-mesa-dark">Private Sessions</a>
+            <div className="relative group">
+              <button className="flex items-center gap-1 text-brown-600 hover:text-mesa-dark">
+                Scheduling
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="absolute top-full left-0 mt-2 hidden group-hover:block w-44 rounded-lg border border-gray-200 bg-white shadow-lg py-1 z-50">
+                <a href="#schedule" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Group Sessions</a>
+                <a href="#camps" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Camps</a>
+                <a href="#private" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Private Sessions</a>
+              </div>
+            </div>
             <a href="/about" className="text-brown-600 hover:text-mesa-dark">About</a>
             <a href="/my-bookings" className="rounded bg-mesa-accent/20 px-3 py-1 text-mesa-accent hover:bg-mesa-accent/30">My Bookings</a>
             <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-brown-600 hover:text-mesa-dark">
@@ -976,9 +987,21 @@ export default function Home() {
         {/* Mobile dropdown menu */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white px-6 py-4 space-y-4 text-sm">
-            <a href="#schedule" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Schedule</a>
-            <a href="#camps" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Camps</a>
-            <a href="#private" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Private Sessions</a>
+            <div>
+              <button onClick={() => setSchedulingOpen((o) => !o)} className="flex items-center justify-between w-full text-brown-600 hover:text-mesa-dark py-1">
+                Scheduling
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 transition-transform ${schedulingOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {schedulingOpen && (
+                <div className="ml-4 mt-1 space-y-1">
+                  <a href="#schedule" onClick={() => setMobileMenuOpen(false)} className="block text-brown-500 hover:text-mesa-dark py-1">Group Sessions</a>
+                  <a href="#camps" onClick={() => setMobileMenuOpen(false)} className="block text-brown-500 hover:text-mesa-dark py-1">Camps</a>
+                  <a href="#private" onClick={() => setMobileMenuOpen(false)} className="block text-brown-500 hover:text-mesa-dark py-1">Private Sessions</a>
+                </div>
+              )}
+            </div>
             <a href="/about" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">About</a>
             <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-brown-600 hover:text-mesa-dark py-1">
               Instagram
