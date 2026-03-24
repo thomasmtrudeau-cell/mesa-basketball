@@ -160,7 +160,7 @@ export default function AboutPage() {
               </a>
             </p>
           </div>
-          <div className="mt-6 flex flex-col items-center gap-2">
+          <div className="mt-3 flex flex-col items-center gap-2">
             <a href="/my-bookings" className="text-sm text-mesa-accent hover:text-yellow-300">
               My Bookings &mdash; Look Up Your Registrations
             </a>
