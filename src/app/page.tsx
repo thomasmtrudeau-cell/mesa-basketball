@@ -172,7 +172,7 @@ export default function LandingPage() {
             READY TO GET TO WORK?
           </h2>
           <p className="text-white/80 text-lg mb-8 max-w-xl mx-auto">
-            Whether your child is just starting out or looking to take their game to the next level, there&apos;s a spot for them at Mesa.
+            Whether you&apos;re just starting out or looking to take your game to the next level, there&apos;s a spot for you at Mesa.
           </p>
           <Link
             href="/schedule"

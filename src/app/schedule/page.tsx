@@ -1044,7 +1044,7 @@ export default function Home() {
             Skill work in groups of up to 6 players. Select 2+ sessions to register — volume discounts available.
           </p>
           <p className="mt-2 text-center text-xs text-brown-500">
-            Groups are organized by grade as a guideline. If your child plays up or you&apos;re unsure which group fits best, contact Artemios at (631) 599-1280 or artemios@mesabasketballtraining.com — we&apos;ll find the right fit.
+            Groups are organized by grade as a guideline. If you play up or you&apos;re unsure which group fits best, contact Artemios at (631) 599-1280 or artemios@mesabasketballtraining.com — we&apos;ll find the right fit.
           </p>
           <div className="mt-2 flex flex-wrap justify-center gap-4 text-xs text-brown-500">
             <span>1-3 sessions: $50 each</span>
