@@ -94,6 +94,16 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* The Name */}
+      <section className="bg-brown-950 border-t border-brown-800 py-14 md:py-20">
+        <div className="mx-auto max-w-2xl px-6 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest text-mesa-accent mb-4">The Name</p>
+          <p className="text-brown-300 text-lg md:text-xl leading-relaxed">
+            <span className="text-white font-semibold">ΜΕΣΑ</span> is the Greek word for &ldquo;in.&rdquo; In basketball, it is the call you hear the moment a shot finds the net. It is a word that has followed me my whole life, and when I started this program, no other name came close.
+          </p>
+        </div>
+      </section>
+
       {/* What We Offer */}
       <section className="bg-gradient-to-b from-brown-950 to-mesa-dark py-16 md:py-24">
         <div className="mx-auto max-w-6xl px-6">
