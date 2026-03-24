@@ -1625,7 +1625,7 @@ export default function Home() {
               </a>
             </p>
           </div>
-          <div className="mt-6 flex items-center justify-center gap-4">
+          <div className="mt-6 flex flex-col items-center gap-2">
             <a
               href="/my-bookings"
               className="text-sm text-mesa-accent hover:text-yellow-300"
