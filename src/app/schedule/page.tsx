@@ -822,6 +822,31 @@ export default function Home() {
   const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   // --- Group session helpers ---
+  const ALL_GRADES = [
+    { value: "K", label: "Kindergarten" },
+    { value: "1", label: "1st Grade" }, { value: "2", label: "2nd Grade" },
+    { value: "3", label: "3rd Grade" }, { value: "4", label: "4th Grade" },
+    { value: "5", label: "5th Grade" }, { value: "6", label: "6th Grade" },
+    { value: "7", label: "7th Grade" }, { value: "8", label: "8th Grade" },
+    { value: "9", label: "9th Grade" }, { value: "10", label: "10th Grade" },
+    { value: "11", label: "11th Grade" }, { value: "12", label: "12th Grade" },
+    { value: "College +", label: "College +" },
+  ];
+  const GRADE_ORDER = ["K","1","2","3","4","5","6","7","8","9","10","11","12","College +"];
+
+  function getGradesForGroup(groupName: string) {
+    const match = groupName.match(/Grades?\s+(K|\d+)[–\-](\d+|College\s*\+?)/i);
+    if (!match) return ALL_GRADES;
+    const start = match[1].toUpperCase();
+    const end = match[2].replace(/\s+/g, " ").trim();
+    const endVal = end.toLowerCase().startsWith("college") ? "College +" : end;
+    const si = GRADE_ORDER.indexOf(start);
+    const ei = GRADE_ORDER.indexOf(endVal);
+    if (si === -1 || ei === -1) return ALL_GRADES;
+    const allowed = new Set(GRADE_ORDER.slice(si, ei + 1));
+    return ALL_GRADES.filter((g) => allowed.has(g.value));
+  }
+
   function getGroupSessionKey(s: WeeklySession): string {
     return `${s.group}|${s.date}|${s.startTime}`;
   }
@@ -1791,20 +1816,12 @@ export default function Home() {
                           className="w-full rounded-lg border border-brown-700 bg-brown-800 px-3 py-2 text-white text-sm focus:border-mesa-accent focus:outline-none"
                         >
                           <option value="">Select grade...</option>
-                          <option value="K">Kindergarten</option>
-                          <option value="1">1st Grade</option>
-                          <option value="2">2nd Grade</option>
-                          <option value="3">3rd Grade</option>
-                          <option value="4">4th Grade</option>
-                          <option value="5">5th Grade</option>
-                          <option value="6">6th Grade</option>
-                          <option value="7">7th Grade</option>
-                          <option value="8">8th Grade</option>
-                          <option value="9">9th Grade</option>
-                          <option value="10">10th Grade</option>
-                          <option value="11">11th Grade</option>
-                          <option value="12">12th Grade</option>
-                          <option value="College +">College +</option>
+                          {(modal.type === "weekly"
+                            ? getGradesForGroup(modal.sessionDetails.split(" — ")[0])
+                            : ALL_GRADES
+                          ).map((g) => (
+                            <option key={g.value} value={g.value}>{g.label}</option>
+                          ))}
                         </select>
                       </div>
                     </div>
