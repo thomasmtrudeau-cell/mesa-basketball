@@ -25,13 +25,15 @@ export default function AboutNav() {
         <div className="flex items-center gap-4 text-sm">
           {/* Desktop Scheduling dropdown */}
           <div className="relative group hidden md:block">
-            <button className="flex items-center gap-1 text-brown-600 hover:text-mesa-dark">
+            <Link href="/schedule" className="flex items-center gap-1 text-brown-600 hover:text-mesa-dark">
               Scheduling {chevron()}
-            </button>
-            <div className="absolute top-full left-0 mt-2 hidden group-hover:block w-44 rounded-lg border border-gray-200 bg-white shadow-lg py-1 z-50">
-              <Link href="/schedule#schedule" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Group Sessions</Link>
-              <Link href="/schedule#camps" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Camps</Link>
-              <Link href="/schedule#private" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Private Sessions</Link>
+            </Link>
+            <div className="absolute top-full left-0 w-44 z-50 hidden group-hover:block pt-2">
+              <div className="rounded-lg border border-gray-200 bg-white shadow-lg py-1">
+                <Link href="/schedule#schedule" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Group Sessions</Link>
+                <Link href="/schedule#camps" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Camps</Link>
+                <Link href="/schedule#private" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Private Sessions</Link>
+              </div>
             </div>
           </div>
           <Link href="/about" className="hidden md:inline text-brown-600 hover:text-mesa-dark">About</Link>
