@@ -22,16 +22,16 @@ export default function AboutPage() {
             <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-mesa-accent">
               Founder &amp; Head Trainer
             </p>
-            <h1 className="font-[family-name:var(--font-fira-cond)] text-5xl font-black tracking-wide md:text-7xl">
+            <h1 className="font-[family-name:var(--font-fira-cond)] text-3xl font-black tracking-wide md:text-4xl">
               ARTEMIOS GAVALAS
             </h1>
-            <p className="mt-5 max-w-xl text-brown-300 text-lg leading-relaxed">
-              Former Division I Point Guard. Professional Athlete. Trainer. Community Builder.
+            <p className="mt-4 text-brown-300 text-base">
+              Former Division I Point Guard &nbsp;|&nbsp; Professional Experience &nbsp;|&nbsp; Trainer &nbsp;|&nbsp; Community Builder
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-brown-300">
               <span className="rounded-full border border-brown-700 px-4 py-1">St. John&apos;s University</span>
               <span className="rounded-full border border-brown-700 px-4 py-1">Butler University</span>
-              <span className="rounded-full border border-brown-700 px-4 py-1">Professional Player in Greece</span>
+              <span className="rounded-full border border-brown-700 px-4 py-1">Professional Experience in Greece</span>
               <span className="rounded-full border border-brown-700 px-4 py-1">5+ Years Training</span>
             </div>
           </div>
@@ -48,22 +48,20 @@ export default function AboutPage() {
           </h2>
           <div className="space-y-5 text-brown-200 leading-relaxed text-[17px]">
             <p>
-              Mesa Basketball Training was built out of a genuine love for the game and a deep commitment to
-              helping others grow through it. For Artemios Gavalas, training has always been a passion, something
-              he has poured himself into throughout his playing career and beyond. Long before Mesa had a name,
-              he was in the gym during offseasons, working with players, refining his craft as a trainer, and
-              developing an approach that was intentional, creative, and results-driven.
+              I built Mesa out of a genuine love for the game and a deep commitment to helping others grow through it.
+              Training has always been a passion of mine — something I poured myself into throughout my playing career
+              and beyond. Long before Mesa had a name, I was in the gym during offseasons, working with players,
+              refining my craft as a trainer, and developing an approach that was intentional, creative, and results-driven.
             </p>
             <p>
-              What started as a passion grew into a program. Mesa is rooted in the same community Artemios grew
-              up in, and that connection matters deeply. This is not a program built from a distance. It is built
-              from the same courts, the same neighborhoods, and the same hunger to be great.
+              What started as a passion grew into a program. Mesa is rooted in the same community I grew up in, and
+              that connection matters deeply to me. This is not a program built from a distance. It is built from the
+              same courts, the same neighborhoods, and the same hunger to be great.
             </p>
             <p>
-              Over five years and hundreds of athletes later, from 4-year-olds picking up a ball for the first
-              time to adult professionals sharpening their edge, Mesa has become a place where real development
-              happens. Not shortcuts. Not gimmicks. Just consistent, intentional work that produces results on and
-              off the court.
+              Over five years and hundreds of athletes later — from 4-year-olds picking up a ball for the first time
+              to adult professionals sharpening their edge — Mesa has become a place where real development happens.
+              Not shortcuts. Not gimmicks. Just consistent, intentional work that produces results on and off the court.
             </p>
           </div>
         </section>
@@ -75,17 +73,17 @@ export default function AboutPage() {
           </h2>
           <div className="space-y-5 text-brown-200 leading-relaxed text-[17px] mb-8">
             <p>
-              Artemios competed as a point guard at the Division I level, suiting up for two of college
-              basketball&apos;s most storied programs: St. John&apos;s University and Butler University, both
-              members of the prestigious Big East Conference. Competing in one of the most demanding conferences
-              in the country, he trained alongside and against elite talent day in and day out, developing a
-              deep understanding of the game at its highest collegiate level.
+              I competed as a point guard at the Division I level, suiting up for two of college basketball&apos;s
+              most storied programs: St. John&apos;s University and Butler University, both members of the prestigious
+              Big East Conference. Competing in one of the most demanding conferences in the country, I trained
+              alongside and against elite talent day in and day out, developing a deep understanding of the game
+              at its highest collegiate level.
             </p>
             <p>
-              He went on to continue his career professionally in Greece, gaining firsthand experience in
-              European professional basketball, a system known for its emphasis on skill, IQ, and fundamentals.
-              That combination of American Division I intensity and European technical discipline is the
-              foundation every Mesa session is built on.
+              I went on to continue my career professionally in Greece, gaining firsthand experience in European
+              professional basketball — a system known for its emphasis on skill, IQ, and fundamentals. That
+              combination of American Division I intensity and European technical discipline is the foundation
+              every Mesa session is built on.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -134,22 +132,21 @@ export default function AboutPage() {
           </h2>
           <div className="space-y-5 text-brown-200 leading-relaxed text-[17px]">
             <p>
-              Great trainers do not just run drills. They teach the game. At Mesa, every session is
-              thoughtfully designed with creativity and purpose. The goal is not to go through the motions.
-              It is to understand <em>why</em> each skill matters and how it translates to live game situations.
-              That kind of intentional training is what separates players who look good in drills from players
-              who perform when it counts.
+              Great trainers don&apos;t just run drills — they teach the game. Every session I run is thoughtfully
+              designed with creativity and purpose. The goal is not to go through the motions. It is to understand{" "}
+              <em>why</em> each skill matters and how it translates to live game situations. That kind of intentional
+              training is what separates players who look good in drills from players who perform when it counts.
             </p>
             <p>
-              Artemios brings a point guard&apos;s mind to every session, reading situations, making adjustments,
-              and finding the right way to connect with each athlete individually. Whether working with a beginner
-              or a seasoned player, the energy in the gym stays high, the expectations stay real, and the
+              I bring a point guard&apos;s mind to every session — reading situations, making adjustments, and
+              finding the right way to connect with each athlete individually. Whether I&apos;m working with a
+              beginner or a seasoned player, the energy in the gym stays high, the expectations stay real, and the
               creativity keeps players engaged and progressing.
             </p>
             <p>
               The lessons go beyond basketball. Dedication, consistency, showing up when it is hard, and chasing
               your goals with discipline are values that carry athletes far beyond the court and into every area
-              of their lives. Mesa is committed to developing people, not just players.
+              of their lives. I&apos;m committed to developing people, not just players.
             </p>
           </div>
         </section>
@@ -208,18 +205,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Quote */}
-        <section className="border-l-4 border-mesa-accent pl-6">
-          <blockquote className="text-brown-200 text-xl leading-relaxed italic">
-            &ldquo;I started Mesa because I wanted to give players access to the kind of training and mentorship
-            that shaped me. If I can take everything I&apos;ve learned from some of the best programs and coaches
-            in the world and pass that on to kids in my own community, that is everything. That&apos;s the whole point.&rdquo;
-          </blockquote>
-          <p className="mt-4 text-mesa-accent font-semibold text-sm uppercase tracking-widest">
-            Artemios Gavalas, Founder
-          </p>
-        </section>
-
         {/* CTA */}
         <section className="rounded-xl border border-brown-700 bg-brown-900/40 px-8 py-10 text-center">
           <h2 className="font-[family-name:var(--font-fira-cond)] text-3xl font-black tracking-wide mb-3">
@@ -230,7 +215,7 @@ export default function AboutPage() {
             there&apos;s a spot for them at Mesa. Browse available sessions and lock in your booking today.
           </p>
           <Link
-            href="/"
+            href="/schedule"
             className="inline-block rounded bg-mesa-accent px-8 py-3 font-semibold text-white hover:bg-mesa-accent/90 transition"
           >
             View Schedule &amp; Book
