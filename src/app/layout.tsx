@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "Mesa Basketball Training | Artemios Gavalas",
   description:
     "Basketball training with former Division I player Artemios Gavalas. Group sessions, private training, and mini camps.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
