@@ -19,7 +19,7 @@ export default function AboutNav() {
           <Link href="/schedule#schedule" className="hidden md:inline text-brown-600 hover:text-mesa-dark">Schedule</Link>
           <Link href="/schedule#camps" className="hidden md:inline text-brown-600 hover:text-mesa-dark">Camps</Link>
           <Link href="/schedule#private" className="hidden md:inline text-brown-600 hover:text-mesa-dark">Private Sessions</Link>
-          <Link href="/about" className="hidden md:inline text-mesa-accent font-medium">About</Link>
+          <Link href="/about" className="hidden md:inline text-brown-600 hover:text-mesa-dark">About</Link>
           <Link href="/my-bookings" className="hidden md:inline rounded bg-mesa-accent/20 px-3 py-1 text-mesa-accent hover:bg-mesa-accent/30">My Bookings</Link>
           <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hidden md:inline text-brown-600 hover:text-mesa-dark">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -52,7 +52,7 @@ export default function AboutNav() {
           <Link href="/schedule#schedule" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Schedule</Link>
           <Link href="/schedule#camps" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Camps</Link>
           <Link href="/schedule#private" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Private Sessions</Link>
-          <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block text-mesa-accent font-medium py-1">About</Link>
+          <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">About</Link>
           <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-brown-600 hover:text-mesa-dark py-1">
             Instagram
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
