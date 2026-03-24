@@ -3,9 +3,18 @@ import Link from "next/link";
 import LandingNav from "./LandingNav";
 
 export const metadata: Metadata = {
-  title: "Mesa Basketball Training",
+  title: "Mesa Basketball Training | Long Island",
   description:
-    "Elite basketball training on Long Island. Group sessions, mini camps, and private training.",
+    "Elite basketball training on Long Island with former D1 and professional player Artemios Gavalas. Group sessions, mini camps, and private training for all ages.",
+  keywords: ["basketball training", "Long Island basketball", "basketball camps Long Island", "private basketball training", "youth basketball Long Island", "Mesa Basketball"],
+  openGraph: {
+    title: "Mesa Basketball Training | Long Island",
+    description: "Elite basketball training on Long Island with former D1 and professional player Artemios Gavalas.",
+    url: "https://www.mesabasketballtraining.com",
+    siteName: "Mesa Basketball Training",
+    images: [{ url: "https://www.mesabasketballtraining.com/og-image.jpg" }],
+    type: "website",
+  },
 };
 
 export default function LandingPage() {
