@@ -236,7 +236,12 @@ export default function LandingPage() {
               </svg>
             </a>
           </div>
-          <p className="mt-4 text-sm text-brown-600">
+          <div className="mt-4 flex justify-center gap-4 text-xs text-brown-600">
+            <a href="/privacy-policy" className="hover:text-brown-400">Privacy Policy</a>
+            <span>·</span>
+            <a href="/terms" className="hover:text-brown-400">Terms of Service</a>
+          </div>
+          <p className="mt-2 text-sm text-brown-600">
             &copy; 2025&ndash;{new Date().getFullYear()} Mesa Basketball Training LLC. All rights reserved.
           </p>
         </div>

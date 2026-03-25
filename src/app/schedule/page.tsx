@@ -2224,6 +2224,15 @@ export default function Home() {
           </div>
         </div>
       )}
+      {/* Footer */}
+      <footer className="border-t border-brown-800 bg-brown-950 py-6 text-center">
+        <div className="flex justify-center gap-4 text-xs text-brown-600">
+          <a href="/privacy-policy" className="hover:text-brown-400">Privacy Policy</a>
+          <span>·</span>
+          <a href="/terms" className="hover:text-brown-400">Terms of Service</a>
+        </div>
+        <p className="mt-2 text-xs text-brown-700">&copy; 2025&ndash;{new Date().getFullYear()} Mesa Basketball Training LLC. All rights reserved.</p>
+      </footer>
     </div>
   );
 }
