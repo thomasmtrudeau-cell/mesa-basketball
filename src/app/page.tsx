@@ -197,7 +197,7 @@ export default function LandingPage() {
             href="/schedule"
             className="inline-block rounded-lg bg-white px-10 py-4 font-bold text-mesa-accent text-lg hover:bg-brown-100 transition"
           >
-            View Programs &mdash; Book Now
+            View Programs &amp; Book Now
           </Link>
         </div>
       </section>
