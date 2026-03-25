@@ -27,7 +27,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-6 py-24 md:py-36">
           <div className="flex flex-col items-center text-center">
             <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-mesa-accent">
-              Long Island&apos;s Elite Basketball Training Program
+              Long Island&apos;s Elite Basketball Training
             </p>
             <h1 className="font-[family-name:var(--font-fira-cond)] text-6xl font-black tracking-wide md:text-8xl leading-none">
               TRAIN WITH<br />PURPOSE.
