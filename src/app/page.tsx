@@ -117,9 +117,9 @@ export default function LandingPage() {
       <section className="bg-gradient-to-b from-brown-950 to-mesa-dark py-16 md:py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="text-center mb-12">
-            <p className="text-sm font-semibold uppercase tracking-widest text-mesa-accent mb-2">Programs</p>
+            <p className="text-sm font-semibold uppercase tracking-widest text-mesa-accent mb-2">Training Programs for Every Level</p>
             <h2 className="font-[family-name:var(--font-fira-cond)] text-4xl font-black tracking-wide">
-              TRAINING PROGRAMS FOR EVERY LEVEL
+              FIND YOUR FIT
             </h2>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
