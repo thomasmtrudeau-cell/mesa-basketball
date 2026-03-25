@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { authClient } from "@/lib/auth";
 
 const chevron = (open?: boolean) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 mt-0.5 transition-transform ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -12,6 +13,13 @@ const chevron = (open?: boolean) => (
 export default function LandingNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [schedulingOpen, setSchedulingOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    authClient.auth.getSession().then(({ data: { session } }) => {
+      setUserEmail(session?.user?.email ?? null);
+    });
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
@@ -42,6 +50,11 @@ export default function LandingNav() {
           <Link href="/about" className="hidden md:inline text-brown-600 hover:text-mesa-dark">About</Link>
           <span className="hidden md:inline text-brown-300">|</span>
           <Link href="/my-bookings" className="hidden md:inline rounded bg-brown-600/20 px-3 py-1 text-brown-600 hover:bg-brown-600/30">My Bookings</Link>
+          {userEmail ? (
+            <Link href="/my-bookings" className="hidden md:inline rounded bg-mesa-accent/20 px-3 py-1 text-mesa-accent hover:bg-mesa-accent/30 text-xs font-medium">Account</Link>
+          ) : (
+            <Link href="/login" className="hidden md:inline rounded bg-mesa-accent/20 px-3 py-1 text-mesa-accent hover:bg-mesa-accent/30 text-xs font-medium">Sign In</Link>
+          )}
           <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hidden md:inline text-brown-600 hover:text-mesa-dark">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -91,6 +104,11 @@ export default function LandingNav() {
             </svg>
           </a>
           <Link href="/my-bookings" onClick={() => setMobileMenuOpen(false)} className="block rounded bg-brown-600/20 px-3 py-2 text-brown-600 hover:bg-brown-600/30 text-center font-medium">My Bookings</Link>
+          {userEmail ? (
+            <Link href="/my-bookings" onClick={() => setMobileMenuOpen(false)} className="block rounded bg-mesa-accent/20 px-3 py-2 text-mesa-accent hover:bg-mesa-accent/30 text-center font-medium">Account</Link>
+          ) : (
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block rounded bg-mesa-accent/20 px-3 py-2 text-mesa-accent hover:bg-mesa-accent/30 text-center font-medium">Sign In</Link>
+          )}
         </div>
       )}
     </nav>

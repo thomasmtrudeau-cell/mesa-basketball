@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { authClient } from "@/lib/auth";
 
 const LOCATION_NAMES: Record<string, string> = {
   "St. Pauls": "St. Paul's Cathedral",
@@ -43,15 +44,21 @@ export default function MyBookings() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Load saved email and auto-lookup
+  // Load saved email and auto-lookup — prefer logged-in session
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("mesa_parent_email");
-      if (saved) {
-        setEmail(saved);
-        lookupBookings(saved);
+    authClient.auth.getSession().then(({ data: { session } }) => {
+      const sessionEmail = session?.user?.email;
+      if (sessionEmail) {
+        setEmail(sessionEmail);
+        lookupBookings(sessionEmail);
+      } else if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("mesa_parent_email");
+        if (saved) {
+          setEmail(saved);
+          lookupBookings(saved);
+        }
       }
-    }
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

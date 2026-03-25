@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { authClient } from "@/lib/auth";
 
 const LOCATION_LINKS: Record<string, { name: string; url: string }> = {
   "St. Pauls": { name: "St. Paul's Cathedral", url: "https://share.google/kgiqMxAj2iAFEAGI6" },
@@ -390,6 +391,36 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
+  async function saveProfile() {
+    const { data: { session } } = await authClient.auth.getSession();
+    if (!session) return;
+    fetch("/api/profile", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ parentName, phone, kids }),
+    });
+  }
+
+  // Pre-fill form from saved profile if logged in
+  useEffect(() => {
+    authClient.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      fetch("/api/profile", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+        .then((r) => r.json())
+        .then((profile) => {
+          if (profile.parent_name) setParentName(profile.parent_name);
+          if (profile.email) setEmail(profile.email);
+          if (profile.phone) setPhone(profile.phone);
+          if (profile.kids?.length) setKids(profile.kids);
+        });
+    });
+  }, []);
+
   const pkgMonthOptions = useMemo(() => {
     const now = new Date();
     const options = [];
@@ -609,6 +640,7 @@ export default function Home() {
           success: true,
           message: `${modal.selectedGroupSessions.length} sessions booked! A confirmation email has been sent to ${email}.`,
         });
+        saveProfile();
         // Clear selections
         setSelectedGroupKeys(new Set());
         const fresh = await fetch("/api/schedule").then((r) => r.json());
@@ -700,6 +732,7 @@ export default function Home() {
           ? `${datesToBook.length} sessions booked! A confirmation email has been sent to ${email}.`
           : `Booking confirmed! A confirmation email has been sent to ${email}.`,
       });
+      saveProfile();
       const fresh = await fetch("/api/schedule").then((r) => r.json());
       setSchedule(fresh.weeklySchedule || []);
       setCamps(fresh.camps || []);

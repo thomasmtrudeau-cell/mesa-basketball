@@ -46,6 +46,7 @@ export const demoCamps: Camp[] = [
     currentEnrolled: 12,
     price: "$200",
     description: "Five days of intensive skill work — shooting, ball handling, footwork, and game situations. All skill levels welcome (grades 3-8).",
+    notify: false,
   },
   {
     id: "camp-1",
@@ -58,6 +59,7 @@ export const demoCamps: Camp[] = [
     currentEnrolled: 15,
     price: "$125",
     description: "Three-day camp focused on competitive drills and game IQ. Grades 5-12.",
+    notify: false,
   },
 ];
 

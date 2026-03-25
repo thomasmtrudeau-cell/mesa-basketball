@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This is the **Mesa Basketball Training** website (mesabasketballtraining.com), owned and run by Artemios Gavalas. It deploys automatically to Vercel from the main branch. When the user asks to edit something, read the relevant file first, make the change, then commit and push when asked.
 
 ## Commands
 
