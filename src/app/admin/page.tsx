@@ -105,22 +105,22 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-brown-950 text-white">
       {/* Header */}
-      <div className="border-b border-brown-800 bg-brown-900/50 px-6 py-4">
+      <div className="border-b border-gray-200 bg-white px-6 py-4">
         <div className="mx-auto max-w-7xl flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center">
-              <img src="/logo.png" alt="Mesa" className="h-8 w-8 object-contain" />
+            <div className="h-14 w-14 rounded-full bg-white border border-gray-100 overflow-hidden flex items-center justify-center">
+              <img src="/logo.png" alt="Mesa" className="h-14 w-14 object-contain scale-125" />
             </div>
             <div>
-              <p className="font-[family-name:var(--font-oswald)] text-xl font-bold tracking-wide">ADMIN DASHBOARD</p>
-              <p className="text-xs text-brown-400">Mesa Basketball Training</p>
+              <p className="font-[family-name:var(--font-oswald)] text-xl font-bold tracking-wide text-mesa-dark">ADMIN DASHBOARD</p>
+              <p className="text-xs text-brown-500">Mesa Basketball Training</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-sm text-brown-400 hover:text-white">← Site</Link>
+            <Link href="/" className="text-sm text-brown-500 hover:text-mesa-dark">← Site</Link>
             <button
               onClick={() => authClient.auth.signOut().then(() => router.push("/login"))}
-              className="text-sm rounded-lg border border-brown-700 px-3 py-1.5 text-brown-400 hover:text-white hover:border-brown-500 transition"
+              className="text-sm rounded-lg border border-brown-300 px-3 py-1.5 text-brown-500 hover:text-mesa-dark hover:border-brown-400 transition"
             >
               Sign Out
             </button>
