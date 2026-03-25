@@ -222,7 +222,7 @@ export default function LandingPage() {
 
           </div>
 
-          <p className="mt-8 text-xs text-brown-600 text-center">Serving athletes across Long Island — NYC, Manhasset, Garden City, Hempstead, Long Beach, Huntington, Southampton &amp; surrounding areas.</p>
+          <p className="mt-8 text-xs text-mesa-accent text-center">Serving athletes across Long Island — NYC, Manhasset, Garden City, Hempstead, Long Beach, Huntington, Southampton &amp; surrounding areas.</p>
         </div>
       </section>
 
