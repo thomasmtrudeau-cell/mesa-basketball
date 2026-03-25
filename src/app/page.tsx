@@ -76,22 +76,22 @@ export default function LandingPage() {
       <section className="bg-brown-950 border-t border-brown-800 py-16 md:py-24">
         <div className="mx-auto max-w-4xl px-6">
           <div className="text-center mb-10">
-            <p className="text-sm font-semibold uppercase tracking-widest text-mesa-accent mb-2">What Sets Mesa Apart</p>
-            <h2 className="font-[family-name:var(--font-fira-cond)] text-4xl font-black tracking-wide">THE APPROACH</h2>
+            <p className="text-sm font-semibold uppercase tracking-widest text-mesa-accent mb-2">The Approach</p>
+            <h2 className="font-[family-name:var(--font-fira-cond)] text-4xl font-black tracking-wide">A DIFFERENT STANDARD OF TRAINING</h2>
           </div>
           <div className="grid gap-8 md:grid-cols-3 text-center">
             {[
               {
-                heading: "We Teach the Game",
-                body: "Every session is built around understanding why each skill matters, not just running drills. Players learn how it translates to real game situations.",
+                heading: "Not Just Drills",
+                body: "Players develop basketball IQ, decision-making, and real game awareness so skills translate under pressure.",
               },
               {
-                heading: "Real Development",
-                body: "No shortcuts, no gimmicks. Just consistent, intentional work designed to produce results on the court and develop character off of it.",
+                heading: "Real Results",
+                body: "No gimmicks. No wasted reps. Every session is designed for measurable improvement in skill, confidence, and performance.",
               },
               {
-                heading: "Beyond Basketball",
-                body: "Dedication, discipline, and showing up when it is hard. The lessons players take from Mesa carry into every area of their lives.",
+                heading: "Built Beyond Basketball",
+                body: "We train discipline, focus, and resilience, because great players are built mentally as much as physically.",
               },
             ].map((item) => (
               <div key={item.heading} className="rounded-xl border border-brown-700 bg-brown-900/40 px-6 py-8">
@@ -108,7 +108,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-2xl px-6 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-mesa-accent mb-4">The Name</p>
           <p className="text-brown-300 text-lg md:text-xl leading-relaxed">
-            <span className="text-white font-semibold">ΜΕΣΑ</span> is the Greek word for &ldquo;in.&rdquo; In basketball, it is the call you hear the moment a shot finds the net. It is a word that has followed me my whole life, and when I started this program, no other name came close.
+            <span className="text-white font-semibold">ΜΕΣΑ</span> is the Greek word for &ldquo;in.&rdquo; In basketball, it is the call you hear the moment a shot finds the net. It represents precision. Confidence. Execution. A word that has followed Artemios his entire life and now defines how players train.
           </p>
         </div>
       </section>
@@ -119,27 +119,27 @@ export default function LandingPage() {
           <div className="text-center mb-12">
             <p className="text-sm font-semibold uppercase tracking-widest text-mesa-accent mb-2">Programs</p>
             <h2 className="font-[family-name:var(--font-fira-cond)] text-4xl font-black tracking-wide">
-              FIND YOUR FIT
+              TRAINING PROGRAMS FOR EVERY LEVEL
             </h2>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {[
               {
-                title: "Group Sessions",
-                tag: "Weekly",
-                desc: "Structured skill development in a competitive small-group setting. Players push each other, learn together, and walk out better every single time.",
+                title: "Group Training Sessions",
+                tag: "Competitive. Structured. Consistent.",
+                desc: "Small group basketball training focused on skill development, game situations, and live competition. Perfect for players who want to improve while being pushed by others.",
                 anchor: "/schedule#schedule",
               },
               {
                 title: "Mini Camps",
-                tag: "Intensive",
-                desc: "Multi-day programs built for accelerated development. High reps, high energy, and focused training blocks designed to elevate your game fast.",
+                tag: "Accelerated Development. Maximum Reps.",
+                desc: "Multi-day intensive camps built for rapid skill growth, competitive games, and confidence-building in a high-energy environment.",
                 anchor: "/schedule#camps",
               },
               {
                 title: "Private Training",
-                tag: "1-on-1 & Small Group",
-                desc: "Sessions completely tailored to your individual goals. Maximum attention, maximum growth, on your schedule.",
+                tag: "Personalized. Focused. Elite.",
+                desc: "Customized training programs built around your position, goals, and development needs.",
                 anchor: "/schedule#private",
               },
             ].map((item) => (
