@@ -58,6 +58,9 @@ export default function LandingPage() {
       {/* Quote */}
       <section className="bg-mesa-dark py-16 md:py-20">
         <div className="mx-auto max-w-3xl px-6">
+          <p className="font-[family-name:var(--font-fira-cond)] text-3xl md:text-4xl font-black tracking-wide text-white mb-8">
+            Built From Experience<span className="text-mesa-accent"> — </span>Designed for Real Growth.
+          </p>
           <div className="border-l-4 border-mesa-accent pl-6">
             <blockquote className="text-brown-200 text-xl md:text-2xl leading-relaxed italic">
               &ldquo;Mesa was built to give players access to the level of training, mindset, and mentorship that shaped my career. Everything I learned from some of the best programs and coaches in the world, I now bring directly to every athlete I work with. My goal is simple &mdash; pass that on to the next generation in my own community.&rdquo;
