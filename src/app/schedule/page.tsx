@@ -391,6 +391,8 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
   async function saveProfile() {
     const { data: { session } } = await authClient.auth.getSession();
     if (!session) return;
@@ -407,6 +409,7 @@ export default function Home() {
   // Pre-fill form from saved profile if logged in
   useEffect(() => {
     authClient.auth.getSession().then(({ data: { session } }) => {
+      setUserEmail(session?.user?.email ?? null);
       if (!session) return;
       fetch("/api/profile", {
         headers: { Authorization: `Bearer ${session.access_token}` },
@@ -1032,7 +1035,24 @@ export default function Home() {
             <span className="text-brown-300">|</span>
             <a href="/about" className="text-brown-600 hover:text-mesa-dark">About</a>
             <span className="text-brown-300">|</span>
-            <a href="/my-bookings" className="rounded bg-brown-600/20 px-3 py-1 text-brown-600 hover:bg-brown-600/30">My Bookings</a>
+            {userEmail ? (
+              <div className="relative group">
+                <button className="flex items-center gap-1 rounded bg-brown-600/20 px-3 py-1 text-brown-600 hover:bg-brown-600/30">
+                  Account
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div className="absolute top-full right-0 w-44 z-50 hidden group-hover:block pt-2">
+                  <div className="rounded-lg border border-gray-200 bg-white shadow-lg py-1">
+                    <a href="/my-bookings" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">My Bookings</a>
+                    <button onClick={async () => { await authClient.auth.signOut(); window.location.href = "/"; }} className="w-full text-left block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Sign Out</button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <a href="/login" className="rounded bg-brown-600/20 px-3 py-1 text-brown-600 hover:bg-brown-600/30">Login</a>
+            )}
             <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-brown-600 hover:text-mesa-dark">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -1086,7 +1106,14 @@ export default function Home() {
                 <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
               </svg>
             </a>
-            <a href="/my-bookings" onClick={() => setMobileMenuOpen(false)} className="block rounded bg-brown-600/20 px-3 py-2 text-brown-600 hover:bg-brown-600/30 text-center font-medium">My Bookings</a>
+            {userEmail ? (
+              <>
+                <a href="/my-bookings" onClick={() => setMobileMenuOpen(false)} className="block rounded bg-brown-600/20 px-3 py-2 text-brown-600 hover:bg-brown-600/30 text-center font-medium">My Bookings</a>
+                <button onClick={async () => { await authClient.auth.signOut(); window.location.href = "/"; }} className="block w-full text-center rounded bg-brown-600/20 px-3 py-2 text-brown-600 hover:bg-brown-600/30 font-medium">Sign Out</button>
+              </>
+            ) : (
+              <a href="/login" onClick={() => setMobileMenuOpen(false)} className="block rounded bg-brown-600/20 px-3 py-2 text-brown-600 hover:bg-brown-600/30 text-center font-medium">Login</a>
+            )}
           </div>
         )}
       </nav>
