@@ -1019,7 +1019,7 @@ export default function Home() {
             <span className="text-brown-300">|</span>
             <div className="relative group">
               <a href="#schedule" className="flex items-center gap-1 text-brown-600 hover:text-mesa-dark">
-                Scheduling
+                Programs
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
@@ -1084,7 +1084,7 @@ export default function Home() {
             <a href="/" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Home</a>
             <div>
               <button onClick={() => setSchedulingOpen((o) => !o)} className="flex items-center justify-between w-full text-brown-600 hover:text-mesa-dark py-1">
-                Scheduling
+                Programs
                 <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 transition-transform ${schedulingOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>

@@ -147,7 +147,7 @@ export default function AboutPage() {
             href="/schedule"
             className="inline-block rounded bg-mesa-accent px-8 py-3 font-semibold text-white hover:bg-mesa-accent/90 transition"
           >
-            View Schedule &amp; Book
+            View Programs &amp; Book
           </Link>
         </section>
 

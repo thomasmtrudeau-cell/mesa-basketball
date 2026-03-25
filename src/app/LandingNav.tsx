@@ -45,7 +45,7 @@ export default function LandingNav() {
           {/* Desktop Scheduling dropdown */}
           <div className="relative group hidden md:block">
             <Link href="/schedule" className="flex items-center gap-1 text-brown-600 hover:text-mesa-dark">
-              Scheduling {chevron()}
+              Programs {chevron()}
             </Link>
             <div className="absolute top-full left-0 w-44 z-50 hidden group-hover:block pt-2">
               <div className="rounded-lg border border-gray-200 bg-white shadow-lg py-1">
@@ -103,7 +103,7 @@ export default function LandingNav() {
           <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Home</Link>
           <div>
             <button onClick={() => setSchedulingOpen((o) => !o)} className="flex items-center justify-between w-full text-brown-600 hover:text-mesa-dark py-1">
-              Scheduling {chevron(schedulingOpen)}
+              Programs {chevron(schedulingOpen)}
             </button>
             {schedulingOpen && (
               <div className="ml-4 mt-1 space-y-1">
