@@ -187,23 +187,24 @@ export default function LandingPage() {
           </div>
 
           {/* Three columns */}
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2">
 
             {/* Who We Train */}
-            <div className="rounded-xl border border-brown-700 bg-brown-900/40 px-6 py-8">
+            <div className="rounded-xl border border-brown-700 bg-brown-900/40 px-6 py-8 flex flex-col">
               <p className="font-[family-name:var(--font-fira-cond)] text-xl font-black tracking-wide text-mesa-accent mb-4">Who We Train</p>
-              <ul className="space-y-3 text-sm text-brown-300">
+              <ul className="space-y-3 text-sm text-brown-300 flex-1">
                 <li><span className="text-white font-semibold">Beginner</span><br /><span className="text-brown-400">Building fundamentals, coordination, and a love for the game</span></li>
                 <li><span className="text-white font-semibold">Intermediate</span><br /><span className="text-brown-400">Developing skills, basketball IQ, and competitive instincts</span></li>
                 <li><span className="text-white font-semibold">Advanced</span><br /><span className="text-brown-400">Elevating performance, game speed, and court vision</span></li>
                 <li><span className="text-white font-semibold">College &amp; Pro</span><br /><span className="text-brown-400">Year-round development for competitive athletes at the highest levels</span></li>
               </ul>
+              <p className="mt-6 pt-4 border-t border-brown-800 text-xs text-brown-600">Serving NYC, Manhasset, Garden City, Hempstead, Long Beach, Huntington, Southampton &amp; surrounding areas.</p>
             </div>
 
             {/* What Players Gain */}
-            <div className="rounded-xl border border-brown-700 bg-brown-900/40 px-6 py-8">
+            <div className="rounded-xl border border-brown-700 bg-brown-900/40 px-6 py-8 flex flex-col">
               <p className="font-[family-name:var(--font-fira-cond)] text-xl font-black tracking-wide text-mesa-accent mb-4">What Players Gain</p>
-              <ul className="space-y-2 text-sm text-brown-300">
+              <ul className="space-y-2 text-sm text-brown-300 flex-1">
                 {[
                   "Elite ball handling & scoring ability",
                   "Improved shooting mechanics",
@@ -218,15 +219,7 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            {/* Where We Train */}
-            <div className="rounded-xl border border-brown-700 bg-brown-900/40 px-6 py-8">
-              <p className="font-[family-name:var(--font-fira-cond)] text-xl font-black tracking-wide text-mesa-accent mb-4">Basketball Training on Long Island</p>
-              <p className="text-sm text-brown-400 mb-3">Mesa serves athletes across Nassau County, Suffolk County, The Hamptons, and New York City — including:</p>
-              <p className="text-sm text-brown-300 leading-relaxed">
-                NYC, Manhasset, Garden City, Hempstead, Long Beach, Huntington, Southampton, and surrounding areas.
-              </p>
+              <p className="mt-6 pt-4 border-t border-brown-800 text-xs text-brown-600">Basketball training on Long Island — Nassau County, Suffolk County, The Hamptons &amp; NYC.</p>
             </div>
 
           </div>
