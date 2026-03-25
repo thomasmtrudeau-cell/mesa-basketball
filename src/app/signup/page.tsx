@@ -82,7 +82,7 @@ export default function SignupPage() {
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <div className="h-28 w-28 mx-auto mb-4 rounded-full bg-white overflow-hidden flex items-center justify-center">
-            <img src="/logo.png" alt="Mesa Basketball" className="h-28 w-28 object-contain scale-150" />
+            <img src="/logo.png" alt="Mesa Basketball" className="h-28 w-28 object-contain scale-125" />
           </div>
           <h1 className="font-[family-name:var(--font-oswald)] text-3xl font-bold text-white tracking-wide">CREATE ACCOUNT</h1>
           <p className="text-brown-400 mt-1 text-sm">Save your info and book faster every time</p>
