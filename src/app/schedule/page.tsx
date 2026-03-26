@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { authClient } from "@/lib/auth";
 
 const LOCATION_LINKS: Record<string, { name: string; url: string }> = {
@@ -399,6 +399,7 @@ export default function Home() {
   }, []);
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const profileRef = useRef<{ parentName: string; phone: string; kids: { name: string; dob: string; grade: string }[] } | null>(null);
 
   async function saveProfile() {
     const { data: { session } } = await authClient.auth.getSession();
@@ -427,6 +428,11 @@ export default function Home() {
           if (profile.email) setEmail(profile.email);
           if (profile.phone) setPhone(profile.phone);
           if (profile.kids?.length) setKids(profile.kids);
+          profileRef.current = {
+            parentName: profile.parent_name || "",
+            phone: profile.phone || "",
+            kids: profile.kids?.length ? profile.kids : [{ name: "", dob: "", grade: "" }],
+          };
         });
     });
   }, []);
@@ -565,12 +571,11 @@ export default function Home() {
       remainingAfterSelection: window.endMins - endMins,
     });
     setSubmitResult(null);
-    setParentName("");
-    setEmail("");
-    setPhone("");
+    setParentName(profileRef.current?.parentName ?? "");
+    setPhone(profileRef.current?.phone ?? "");
     setSmsConsent(true);
     setShowAllRecurring(false);
-    setKids([{ name: "", dob: "", grade: "" }]);
+    setKids(profileRef.current?.kids ?? [{ name: "", dob: "", grade: "" }]);
     setIsGroupRate(false);
     setUpsellExtra(0);
     setReferralCode("");
@@ -579,12 +584,11 @@ export default function Home() {
   function openModal(type: BookingType, sessionIndex: number, details: string) {
     setModal({ open: true, type, sessionIndex, sessionDetails: details });
     setSubmitResult(null);
-    setParentName("");
-    setEmail("");
-    setPhone("");
+    setParentName(profileRef.current?.parentName ?? "");
+    setPhone(profileRef.current?.phone ?? "");
     setSmsConsent(true);
     setShowAllRecurring(false);
-    setKids([{ name: "", dob: "", grade: "" }]);
+    setKids(profileRef.current?.kids ?? [{ name: "", dob: "", grade: "" }]);
     setIsGroupRate(false);
     setUpsellExtra(0);
     setReferralCode("");
@@ -1020,12 +1024,11 @@ export default function Home() {
       weeklySavings: groupPricing.savings,
     });
     setSubmitResult(null);
-    setParentName("");
-    setEmail("");
-    setPhone("");
+    setParentName(profileRef.current?.parentName ?? "");
+    setPhone(profileRef.current?.phone ?? "");
     setSmsConsent(true);
     setShowAllRecurring(false);
-    setKids([{ name: "", dob: "", grade: "" }]);
+    setKids(profileRef.current?.kids ?? [{ name: "", dob: "", grade: "" }]);
     setIsGroupRate(false);
     setUpsellExtra(0);
     setReferralCode("");
