@@ -89,116 +89,95 @@ export default function MyBookings() {
     }
   }
 
-  async function handleLookup(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email.trim()) return;
-    lookupBookings(email);
-  }
-
   return (
     <div className="min-h-screen bg-mesa-dark text-white">
-      <div className="mx-auto max-w-lg px-6 py-16">
+      <div className="mx-auto max-w-5xl px-6 py-16">
         <a href="/" className="text-sm text-mesa-accent hover:text-yellow-300">
           &larr; Back to Home
         </a>
 
         <h1 className="mt-6 text-3xl font-bold">My Bookings</h1>
-        <p className="mt-2 text-brown-400">
-          Enter your email to view all your registrations.
-        </p>
-
-        <form onSubmit={handleLookup} className="mt-6">
-          <div className="flex gap-3">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="parent@example.com"
-              required
-              className="flex-1 rounded-lg border border-brown-700 bg-brown-800 px-4 py-3 text-white placeholder-brown-500 focus:border-mesa-accent focus:outline-none focus:ring-1 focus:ring-mesa-accent"
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="rounded-lg bg-mesa-accent px-6 py-3 font-semibold text-white hover:bg-yellow-600 disabled:opacity-50"
-            >
-              {loading ? "Looking up..." : "Look Up"}
-            </button>
-          </div>
-        </form>
 
         {error && (
           <p className="mt-4 text-sm text-red-400">{error}</p>
         )}
 
+        {loading && (
+          <p className="mt-8 text-brown-400 text-sm">Loading your bookings...</p>
+        )}
+
+        {!loading && bookings === null && !error && (
+          <div className="mt-8 rounded-2xl bg-brown-900 p-8 text-center">
+            <p className="text-brown-300 mb-4">Log in to view your bookings.</p>
+            <a href="/login" className="inline-block rounded-lg bg-mesa-accent px-6 py-3 font-semibold text-white hover:bg-yellow-600">
+              Log In
+            </a>
+          </div>
+        )}
+
         {bookings !== null && bookings.length === 0 && (
           <div className="mt-8 rounded-2xl bg-brown-900 p-6 text-center">
-            <p className="text-brown-400">
-              No bookings found for <span className="text-white">{email}</span>.
-            </p>
-            <p className="mt-2 text-sm text-brown-500">
-              Make sure you&apos;re using the same email you registered with.
-            </p>
+            <p className="text-brown-400">No bookings found for this account.</p>
           </div>
         )}
 
-        {/* Referral Section */}
-        {rewards && (
-          <div className="mt-8 rounded-2xl bg-brown-900 p-6">
-            <h2 className="text-lg font-bold">Referrals</h2>
-            <div className="mt-4 rounded-lg bg-brown-800/60 p-4">
-              <p className="text-sm font-semibold text-brown-300">Your Referral Code</p>
-              <p className="mt-1 text-xl font-bold text-mesa-accent">{rewards.referralCode || "—"}</p>
-              <p className="mt-2 text-xs text-brown-500">
-                Share your code with friends — when a new client books using your code, you earn a 50% off credit on your next private session.
-              </p>
-              {rewards.referralCredits > 0 && (
-                <p className="mt-2 text-sm font-semibold text-mesa-accent">
-                  {rewards.referralCredits} half-off credit{rewards.referralCredits !== 1 ? "s" : ""} available — will be applied automatically on your next booking.
-                </p>
-              )}
-            </div>
-          </div>
-        )}
+        {bookings !== null && bookings.length > 0 && (
+          <div className="mt-8 md:grid md:grid-cols-3 md:gap-8 md:items-start">
 
-        {/* Monthly Package Status Card */}
-        {activePackage && (() => {
-          const remaining = activePackage.packageType - activePackage.sessionsUsed;
-          const [pkgYear, pkgMonth] = activePackage.monthYear.split("-").map(Number);
-          const expiry = new Date(pkgYear, pkgMonth, 0).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-          const monthLabel = new Date(pkgYear, pkgMonth - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
-          return (
-            <div className="mt-6 rounded-2xl bg-brown-900 p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-bold">Monthly Training Package</h2>
-                  <p className="text-sm text-brown-400">{monthLabel} &middot; {activePackage.packageType} sessions</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-3xl font-bold text-mesa-accent">{remaining}</p>
-                  <p className="text-xs text-brown-400">session{remaining !== 1 ? "s" : ""} remaining</p>
-                </div>
+            {/* Sidebar — referrals + package */}
+            {(rewards || activePackage) && (
+              <div className="md:col-span-1 space-y-5 mb-8 md:mb-0">
+                {rewards && (
+                  <div className="rounded-2xl bg-brown-900 p-5">
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-mesa-accent mb-3">Referrals</h2>
+                    <p className="text-xs text-brown-500 mb-1">Your Referral Code</p>
+                    <p className="text-2xl font-bold text-mesa-accent">{rewards.referralCode || "—"}</p>
+                    <p className="mt-2 text-xs text-brown-500 leading-relaxed">
+                      Share your code — when a new client books with it, you earn a 50% off credit on your next private session.
+                    </p>
+                    {rewards.referralCredits > 0 && (
+                      <p className="mt-3 text-sm font-semibold text-mesa-accent">
+                        {rewards.referralCredits} half-off credit{rewards.referralCredits !== 1 ? "s" : ""} available
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {activePackage && (() => {
+                  const remaining = activePackage.packageType - activePackage.sessionsUsed;
+                  const [pkgYear, pkgMonth] = activePackage.monthYear.split("-").map(Number);
+                  const expiry = new Date(pkgYear, pkgMonth, 0).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+                  const monthLabel = new Date(pkgYear, pkgMonth - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+                  return (
+                    <div className="rounded-2xl bg-brown-900 p-5">
+                      <h2 className="text-sm font-bold uppercase tracking-widest text-mesa-accent mb-3">Package</h2>
+                      <p className="text-xs text-brown-400 mb-3">{monthLabel} &middot; {activePackage.packageType} sessions</p>
+                      <div className="flex items-end justify-between mb-3">
+                        <div>
+                          <p className="text-3xl font-bold text-mesa-accent">{remaining}</p>
+                          <p className="text-xs text-brown-400">session{remaining !== 1 ? "s" : ""} remaining</p>
+                        </div>
+                        <p className="text-xs text-brown-500">{activePackage.sessionsUsed} used</p>
+                      </div>
+                      <div className="h-2 rounded-full bg-brown-700">
+                        <div
+                          className="h-2 rounded-full bg-mesa-accent transition-all"
+                          style={{ width: `${Math.min(100, (activePackage.sessionsUsed / activePackage.packageType) * 100)}%` }}
+                        />
+                      </div>
+                      {remaining === 0 ? (
+                        <p className="mt-3 text-xs text-yellow-400/80">All sessions used — contact Artemios to enroll in next month&apos;s package.</p>
+                      ) : (
+                        <p className="mt-3 text-xs text-brown-500">Expires {expiry}.</p>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-xs text-brown-500 mb-1">
-                  <span>{activePackage.sessionsUsed} used</span>
-                  <span>{activePackage.packageType} total</span>
-                </div>
-                <div className="h-2 rounded-full bg-brown-700">
-                  <div
-                    className="h-2 rounded-full bg-mesa-accent transition-all"
-                    style={{ width: `${Math.min(100, (activePackage.sessionsUsed / activePackage.packageType) * 100)}%` }}
-                  />
-                </div>
-              </div>
-              {remaining === 0 ? (
-                <p className="mt-3 text-sm text-yellow-400/80">All sessions used — contact Artemios to enroll in next month&apos;s package.</p>
-              ) : (
-                <p className="mt-3 text-xs text-brown-500">Sessions expire {expiry}. Unused sessions do not carry over.</p>
-              )}
-            </div>
-          );
-        })()}
+            )}
+
+            {/* Main — bookings */}
+            <div className={rewards || activePackage ? "md:col-span-2" : "md:col-span-3"}>
 
         {bookings !== null && bookings.length > 0 && (() => {
           const now = new Date();
@@ -305,7 +284,7 @@ export default function MyBookings() {
           }
 
           return (
-            <div className="mt-6">
+            <div>
               <div className="flex gap-2 mb-6">
                 <button
                   onClick={() => setActiveTab("upcoming")}
@@ -346,6 +325,9 @@ export default function MyBookings() {
             </div>
           );
         })()}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
