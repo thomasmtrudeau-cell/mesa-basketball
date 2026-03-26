@@ -201,34 +201,62 @@ export default function MyBookings() {
 
         {bookings !== null && bookings.length > 0 && (() => {
           const now = new Date();
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
           const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-          // Hide cancelled bookings older than 7 days
+          // Parse a booking's session datetime (date + start time if available)
+          function sessionDateTime(b: BookingRecord): Date | null {
+            if (!b.bookedDate) return null;
+            const d = new Date(b.bookedDate);
+            if (b.bookedStartTime) {
+              const m = b.bookedStartTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+              if (m) {
+                let h = parseInt(m[1]);
+                const min = parseInt(m[2]);
+                const period = m[3].toUpperCase();
+                if (period === "PM" && h !== 12) h += 12;
+                if (period === "AM" && h === 12) h = 0;
+                d.setHours(h, min, 0, 0);
+              }
+            }
+            return d;
+          }
+
+          // Hide cancelled bookings where session (or creation) date is older than 7 days
           const visible = bookings.filter((b) => {
             if (b.status !== "cancelled") return true;
-            const ref = b.bookedDate ? new Date(b.bookedDate) : new Date(b.createdAt);
+            const ref = sessionDateTime(b) ?? new Date(b.createdAt);
             return ref >= sevenDaysAgo;
           });
 
+          // Upcoming: no date, or session datetime is in the future
           const upcoming = visible
-            .filter((b) => !b.bookedDate || new Date(b.bookedDate) >= today)
+            .filter((b) => {
+              const dt = sessionDateTime(b);
+              return !dt || dt > now;
+            })
             .sort((a, b) => {
-              if (!a.bookedDate) return -1;
-              if (!b.bookedDate) return 1;
-              return new Date(a.bookedDate).getTime() - new Date(b.bookedDate).getTime();
+              const da = sessionDateTime(a);
+              const db = sessionDateTime(b);
+              if (!da) return -1;
+              if (!db) return 1;
+              return da.getTime() - db.getTime();
             });
 
+          // Past: session datetime is in the past
           const past = visible
-            .filter((b) => b.bookedDate && new Date(b.bookedDate) < today)
-            .sort((a, b) => new Date(b.bookedDate!).getTime() - new Date(a.bookedDate!).getTime());
+            .filter((b) => {
+              const dt = sessionDateTime(b);
+              return dt !== null && dt <= now;
+            })
+            .sort((a, b) => {
+              return sessionDateTime(b)!.getTime() - sessionDateTime(a)!.getTime();
+            });
 
-          function BookingCard({ b }: { b: BookingRecord }) {
+          function renderCard(b: BookingRecord) {
             const isConfirmed = b.status === "confirmed";
             const isCancelled = b.status === "cancelled";
             return (
-              <div className={`rounded-2xl bg-brown-900 p-5 ${isCancelled ? "opacity-55" : ""}`}>
+              <div key={b.id} className={`rounded-2xl bg-brown-900 p-5 ${isCancelled ? "opacity-55" : ""}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-white">
@@ -279,23 +307,14 @@ export default function MyBookings() {
             <div className="mt-6 space-y-8">
               {upcoming.length > 0 && (
                 <div>
-                  <h2 className="text-xs font-semibold uppercase tracking-widest text-mesa-accent mb-3">
-                    Upcoming
-                  </h2>
-                  <div className="space-y-4">
-                    {upcoming.map((b) => <BookingCard key={b.id} b={b} />)}
-                  </div>
+                  <h2 className="text-xs font-semibold uppercase tracking-widest text-mesa-accent mb-3">Upcoming</h2>
+                  <div className="space-y-4">{upcoming.map(renderCard)}</div>
                 </div>
               )}
-
               {past.length > 0 && (
                 <div>
-                  <h2 className="text-xs font-semibold uppercase tracking-widest text-brown-500 mb-3">
-                    Past
-                  </h2>
-                  <div className="space-y-4">
-                    {past.map((b) => <BookingCard key={b.id} b={b} />)}
-                  </div>
+                  <h2 className="text-xs font-semibold uppercase tracking-widest text-brown-500 mb-3">Past</h2>
+                  <div className="space-y-4">{past.map(renderCard)}</div>
                 </div>
               )}
             </div>
