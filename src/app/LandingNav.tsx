@@ -66,6 +66,10 @@ export default function LandingNav() {
               </button>
               <div className="absolute top-full right-0 w-44 z-50 hidden group-hover:block pt-2">
                 <div className="rounded-lg border border-gray-200 bg-white shadow-lg py-1">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <p className="text-xs text-brown-400">Signed in as</p>
+                    <p className="text-xs font-medium text-brown-700 truncate max-w-[160px]">{userEmail}</p>
+                  </div>
                   <Link href="/my-bookings" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">My Bookings</Link>
                   <button onClick={handleSignOut} className="w-full text-left block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Sign Out</button>
                 </div>
@@ -130,6 +134,7 @@ export default function LandingNav() {
                 </button>
                 {accountOpen && (
                   <div className="ml-4 mt-1 space-y-1">
+                    <p className="text-xs text-brown-400 py-1">Signed in as <span className="font-medium text-brown-600">{userEmail}</span></p>
                     <Link href="/my-bookings" onClick={() => setMobileMenuOpen(false)} className="block text-brown-500 hover:text-mesa-dark py-1">My Bookings</Link>
                     <button onClick={handleSignOut} className="block text-brown-500 hover:text-mesa-dark py-1">Sign Out</button>
                   </div>

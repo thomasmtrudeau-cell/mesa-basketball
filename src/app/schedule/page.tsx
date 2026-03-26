@@ -1076,6 +1076,10 @@ export default function Home() {
                 </button>
                 <div className="absolute top-full right-0 w-44 z-50 hidden group-hover:block pt-2">
                   <div className="rounded-lg border border-gray-200 bg-white shadow-lg py-1">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-xs text-brown-400">Signed in as</p>
+                      <p className="text-xs font-medium text-brown-700 truncate max-w-[160px]">{userEmail}</p>
+                    </div>
                     <a href="/my-bookings" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">My Bookings</a>
                     <button onClick={async () => { await authClient.auth.signOut(); window.location.href = "/"; }} className="w-full text-left block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Sign Out</button>
                   </div>
@@ -1139,6 +1143,7 @@ export default function Home() {
             </a>
             {userEmail ? (
               <>
+                <p className="text-xs text-brown-400 px-1">Signed in as <span className="font-medium text-brown-600">{userEmail}</span></p>
                 <a href="/my-bookings" onClick={() => setMobileMenuOpen(false)} className="block rounded bg-brown-600/20 px-3 py-2 text-brown-600 hover:bg-brown-600/30 text-center font-medium">My Bookings</a>
                 <button onClick={async () => { await authClient.auth.signOut(); window.location.href = "/"; }} className="block w-full text-center rounded bg-brown-600/20 px-3 py-2 text-brown-600 hover:bg-brown-600/30 font-medium">Sign Out</button>
               </>
