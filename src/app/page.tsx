@@ -126,19 +126,19 @@ export default function LandingPage() {
             {[
               {
                 title: "Group Training Sessions",
-                tag: "Competitive. Structured. Consistent.",
+                tag: "Competitive. Collaborative. Consistent.",
                 desc: "Small group basketball training focused on skill development, game situations, and live competition. Perfect for players who want to improve while being pushed by others.",
                 anchor: "/schedule#schedule",
               },
               {
                 title: "Mini Camps",
-                tag: "Accelerated Development. Maximum Reps.",
+                tag: "Intense. Immersive. High-Volume.",
                 desc: "Multi-day intensive camps built for rapid skill growth, competitive games, and confidence-building in a high-energy environment.",
                 anchor: "/schedule#camps",
               },
               {
                 title: "Private Training",
-                tag: "Personalized. Focused. Elite.",
+                tag: "Personalized. 1-on-1. Targeted.",
                 desc: "Customized training programs built around your position, goals, and development needs.",
                 anchor: "/schedule#private",
               },
@@ -210,7 +210,7 @@ export default function LandingPage() {
                   "Game-speed decision making",
                   "Confidence under pressure",
                   "Stronger mindset & discipline",
-                  "Athletes trained have gone on to compete at the high school and college level across Long Island",
+                  "Athletes trained have gone on to compete at the high school and college level",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span className="text-white mt-0.5">◆</span>

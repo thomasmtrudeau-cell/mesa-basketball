@@ -42,6 +42,8 @@ export default function LandingNav() {
         <div className="flex items-center gap-4 text-sm">
           <Link href="/" className="hidden md:inline text-brown-600 hover:text-mesa-dark">Home</Link>
           <span className="hidden md:inline text-brown-300">|</span>
+          <Link href="/about" className="hidden md:inline text-brown-600 hover:text-mesa-dark">About</Link>
+          <span className="hidden md:inline text-brown-300">|</span>
           {/* Desktop Scheduling dropdown */}
           <div className="relative group hidden md:block">
             <Link href="/schedule" className="flex items-center gap-1 text-brown-600 hover:text-mesa-dark">
@@ -55,8 +57,6 @@ export default function LandingNav() {
               </div>
             </div>
           </div>
-          <span className="hidden md:inline text-brown-300">|</span>
-          <Link href="/about" className="hidden md:inline text-brown-600 hover:text-mesa-dark">About</Link>
           <span className="hidden md:inline text-brown-300">|</span>
           {/* Account / Login */}
           {userEmail ? (
@@ -101,6 +101,7 @@ export default function LandingNav() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white px-6 py-4 space-y-4 text-sm">
           <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Home</Link>
+          <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">About</Link>
           <div>
             <button onClick={() => setSchedulingOpen((o) => !o)} className="flex items-center justify-between w-full text-brown-600 hover:text-mesa-dark py-1">
               Programs {chevron(schedulingOpen)}
@@ -113,7 +114,6 @@ export default function LandingNav() {
               </div>
             )}
           </div>
-          <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">About</Link>
           <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-brown-600 hover:text-mesa-dark py-1">
             Instagram
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
