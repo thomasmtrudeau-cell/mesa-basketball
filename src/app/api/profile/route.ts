@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
     parent_name: body.parentName || null,
     phone: body.phone || null,
     kids: body.kids || [],
+    marketing_emails: body.marketingEmails ?? true,
     updated_at: new Date().toISOString(),
   });
 

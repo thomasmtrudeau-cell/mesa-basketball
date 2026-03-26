@@ -69,7 +69,10 @@ export default function AboutNav() {
                     <p className="text-xs font-medium text-brown-700 truncate max-w-[160px]">{userEmail}</p>
                   </div>
                   <Link href="/my-bookings" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">My Bookings</Link>
-                  <button onClick={handleSignOut} className="w-full text-left block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Sign Out</button>
+                  <Link href="/settings" className="block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Settings</Link>
+                  <div className="border-t border-gray-100 mt-1 pt-1">
+                    <button onClick={handleSignOut} className="w-full text-left block px-4 py-2 text-brown-600 hover:text-mesa-dark hover:bg-gray-50">Sign Out</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -133,6 +136,7 @@ export default function AboutNav() {
                 <div className="ml-4 mt-1 space-y-1">
                   <p className="text-xs text-brown-400 py-1">Signed in as <span className="font-medium text-brown-600">{userEmail}</span></p>
                   <Link href="/my-bookings" onClick={() => setMobileMenuOpen(false)} className="block text-brown-500 hover:text-mesa-dark py-1">My Bookings</Link>
+                  <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="block text-brown-500 hover:text-mesa-dark py-1">Settings</Link>
                   <button onClick={handleSignOut} className="block text-brown-500 hover:text-mesa-dark py-1">Sign Out</button>
                 </div>
               )}
