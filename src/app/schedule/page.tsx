@@ -1017,6 +1017,8 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-4 text-sm">
             <a href="/" className="text-brown-600 hover:text-mesa-dark">Home</a>
             <span className="text-brown-300">|</span>
+            <a href="/about" className="text-brown-600 hover:text-mesa-dark">About</a>
+            <span className="text-brown-300">|</span>
             <div className="relative group">
               <a href="#schedule" className="flex items-center gap-1 text-brown-600 hover:text-mesa-dark">
                 Programs
@@ -1032,8 +1034,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <span className="text-brown-300">|</span>
-            <a href="/about" className="text-brown-600 hover:text-mesa-dark">About</a>
             <span className="text-brown-300">|</span>
             {userEmail ? (
               <div className="relative group">
@@ -1082,6 +1082,7 @@ export default function Home() {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white px-6 py-4 space-y-4 text-sm">
             <a href="/" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">Home</a>
+            <a href="/about" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">About</a>
             <div>
               <button onClick={() => setSchedulingOpen((o) => !o)} className="flex items-center justify-between w-full text-brown-600 hover:text-mesa-dark py-1">
                 Programs
@@ -1097,7 +1098,6 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <a href="/about" onClick={() => setMobileMenuOpen(false)} className="block text-brown-600 hover:text-mesa-dark py-1">About</a>
             <a href="https://www.instagram.com/mesabasketballtraining" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-brown-600 hover:text-mesa-dark py-1">
               Instagram
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
