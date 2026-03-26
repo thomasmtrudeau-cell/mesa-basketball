@@ -25,12 +25,12 @@ export async function POST(req: NextRequest) {
       getActivePackage(email, currentMonthYear).catch(() => null),
     ]);
 
-    // Get referral code from most recent registration, or generate one
+    // Get referral code from most recent registration, or generate one (fall back to email username)
     const referralCode =
       registrations.find((r) => r.referral_code)?.referral_code ||
-      (registrations.length > 0
-        ? generateReferralCode(registrations[0].parent_name)
-        : null);
+      generateReferralCode(
+        registrations.length > 0 ? registrations[0].parent_name : email.split("@")[0]
+      );
 
     return NextResponse.json({
       registrations: registrations.map((r) => ({

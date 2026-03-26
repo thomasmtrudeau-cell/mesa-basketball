@@ -115,13 +115,7 @@ export default function MyBookings() {
           </div>
         )}
 
-        {bookings !== null && bookings.length === 0 && (
-          <div className="mt-8 rounded-2xl bg-brown-900 p-6 text-center">
-            <p className="text-brown-400">No bookings found for this account.</p>
-          </div>
-        )}
-
-        {bookings !== null && bookings.length > 0 && (
+        {bookings !== null && (
           <div className="mt-8 md:grid md:grid-cols-3 md:gap-8 md:items-start">
 
             {/* Sidebar — referrals + package */}
@@ -179,7 +173,13 @@ export default function MyBookings() {
             {/* Main — bookings */}
             <div className={rewards || activePackage ? "md:col-span-2" : "md:col-span-3"}>
 
-        {bookings !== null && bookings.length > 0 && (() => {
+        {bookings.length === 0 && (
+          <div className="rounded-2xl bg-brown-900 p-6 text-center">
+            <p className="text-brown-400">No bookings found for this account.</p>
+          </div>
+        )}
+
+        {bookings.length > 0 && (() => {
           const now = new Date();
           const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
