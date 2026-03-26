@@ -199,90 +199,108 @@ export default function MyBookings() {
           );
         })()}
 
-        {bookings !== null && bookings.length > 0 && (
-          <div className="mt-6 space-y-4">
-            <p className="text-sm text-brown-500">
-              {bookings.length} booking{bookings.length !== 1 ? "s" : ""} found
-            </p>
+        {bookings !== null && bookings.length > 0 && (() => {
+          const now = new Date();
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-            {bookings.map((b) => {
-              const isConfirmed = b.status === "confirmed";
-              const isCancelled = b.status === "cancelled";
+          // Hide cancelled bookings older than 7 days
+          const visible = bookings.filter((b) => {
+            if (b.status !== "cancelled") return true;
+            const ref = b.bookedDate ? new Date(b.bookedDate) : new Date(b.createdAt);
+            return ref >= sevenDaysAgo;
+          });
 
-              return (
-                <div
-                  key={b.id}
-                  className={`rounded-2xl bg-brown-900 p-5 ${
-                    isCancelled ? "opacity-60" : ""
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-white">
-                        {formatSessionDetails(b.sessionDetails)}
+          const upcoming = visible
+            .filter((b) => !b.bookedDate || new Date(b.bookedDate) >= today)
+            .sort((a, b) => {
+              if (!a.bookedDate) return -1;
+              if (!b.bookedDate) return 1;
+              return new Date(a.bookedDate).getTime() - new Date(b.bookedDate).getTime();
+            });
+
+          const past = visible
+            .filter((b) => b.bookedDate && new Date(b.bookedDate) < today)
+            .sort((a, b) => new Date(b.bookedDate!).getTime() - new Date(a.bookedDate!).getTime());
+
+          function BookingCard({ b }: { b: BookingRecord }) {
+            const isConfirmed = b.status === "confirmed";
+            const isCancelled = b.status === "cancelled";
+            return (
+              <div className={`rounded-2xl bg-brown-900 p-5 ${isCancelled ? "opacity-55" : ""}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-white">
+                      {formatSessionDetails(b.sessionDetails)}
+                    </p>
+                    <div className="mt-2 space-y-1 text-sm">
+                      <p className="text-brown-400">
+                        <span className="text-brown-500">Players:</span> {b.kids}
                       </p>
-                      <div className="mt-2 space-y-1 text-sm">
-                        <p className="text-brown-400">
-                          <span className="text-brown-500">Players:</span>{" "}
-                          {b.kids}
-                        </p>
-                        <p className="text-brown-400">
-                          <span className="text-brown-500">Type:</span>{" "}
-                          {b.type === "group-private"
-                            ? "Group Private"
-                            : b.type === "private"
-                            ? "Private"
-                            : b.type === "group"
-                            ? "Group"
-                            : b.type === "camp"
-                            ? "Camp"
-                            : b.type}
-                        </p>
-                        <p className="text-brown-500 text-xs">
-                          Registered{" "}
-                          {new Date(b.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-2">
-                      {isConfirmed && (
-                        <span className="inline-block rounded-full bg-green-900/40 px-3 py-1 text-xs font-medium text-green-400">
-                          Confirmed
-                        </span>
-                      )}
-                      {isCancelled && (
-                        <span className="inline-block rounded-full bg-red-900/40 px-3 py-1 text-xs font-medium text-red-400">
-                          Cancelled
-                        </span>
-                      )}
-                      {!isConfirmed && !isCancelled && (
-                        <span className="inline-block rounded-full bg-brown-700 px-3 py-1 text-xs font-medium text-brown-300">
-                          {b.status}
-                        </span>
-                      )}
+                      <p className="text-brown-400">
+                        <span className="text-brown-500">Type:</span>{" "}
+                        {b.type === "group-private" ? "Group Private"
+                          : b.type === "private" ? "Private"
+                          : b.type === "group" ? "Group"
+                          : b.type === "camp" ? "Camp"
+                          : b.type}
+                      </p>
+                      <p className="text-brown-500 text-xs">
+                        Registered{" "}
+                        {new Date(b.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </p>
                     </div>
                   </div>
-
-                  {isConfirmed && (
-                    <div className="mt-3 border-t border-brown-800 pt-3">
-                      <a
-                        href={`/booking/${b.manageToken}`}
-                        className="inline-flex items-center gap-1 text-sm font-medium text-mesa-accent hover:text-yellow-300"
-                      >
-                        Manage Booking &rarr;
-                      </a>
-                    </div>
-                  )}
+                  <div className="flex flex-col items-end gap-2 shrink-0">
+                    {isConfirmed && (
+                      <span className="inline-block rounded-full bg-green-900/40 px-3 py-1 text-xs font-medium text-green-400">Confirmed</span>
+                    )}
+                    {isCancelled && (
+                      <span className="inline-block rounded-full bg-red-900/40 px-3 py-1 text-xs font-medium text-red-400">Cancelled</span>
+                    )}
+                    {!isConfirmed && !isCancelled && (
+                      <span className="inline-block rounded-full bg-brown-700 px-3 py-1 text-xs font-medium text-brown-300">{b.status}</span>
+                    )}
+                  </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                {isConfirmed && (
+                  <div className="mt-3 border-t border-brown-800 pt-3">
+                    <a href={`/booking/${b.manageToken}`} className="inline-flex items-center gap-1 text-sm font-medium text-mesa-accent hover:text-yellow-300">
+                      Manage Booking &rarr;
+                    </a>
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <div className="mt-6 space-y-8">
+              {upcoming.length > 0 && (
+                <div>
+                  <h2 className="text-xs font-semibold uppercase tracking-widest text-mesa-accent mb-3">
+                    Upcoming
+                  </h2>
+                  <div className="space-y-4">
+                    {upcoming.map((b) => <BookingCard key={b.id} b={b} />)}
+                  </div>
+                </div>
+              )}
+
+              {past.length > 0 && (
+                <div>
+                  <h2 className="text-xs font-semibold uppercase tracking-widest text-brown-500 mb-3">
+                    Past
+                  </h2>
+                  <div className="space-y-4">
+                    {past.map((b) => <BookingCard key={b.id} b={b} />)}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
