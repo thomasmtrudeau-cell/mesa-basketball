@@ -36,13 +36,12 @@ export default function AboutPage() {
               ARTEMIOS GAVALAS
             </h1>
             <p className="mt-4 text-brown-300 text-base">
-              Former Division I Point Guard &nbsp;&bull;&nbsp; Professional Experience &nbsp;&bull;&nbsp; Trainer &nbsp;&bull;&nbsp; Community Builder
+              Former Division I Point Guard &nbsp;&bull;&nbsp; Professional Experience &nbsp;&bull;&nbsp; 5+ Year Trainer
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-brown-300">
               <span className="rounded-full border border-brown-700 px-4 py-1">St. John&apos;s University</span>
               <span className="rounded-full border border-brown-700 px-4 py-1">Butler University</span>
-              <span className="rounded-full border border-brown-700 px-4 py-1">Professional Experience in Greece</span>
-              <span className="rounded-full border border-brown-700 px-4 py-1">5+ Years Training</span>
+              <span className="rounded-full border border-brown-700 px-4 py-1">Greece</span>
             </div>
           </div>
         </div>

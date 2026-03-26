@@ -187,24 +187,31 @@ function buildTimeWindows(slots: PrivateSlot[]): TimeWindow[] {
 }
 
 // Generate 15-min increment start times within a window
-function getStartOptions(window: TimeWindow, minDuration: number): number[] {
+function getStartOptions(window: TimeWindow, minDuration: number, minStart?: number): number[] {
   const options: number[] = [];
   // Latest possible start = window end minus minimum duration
   const latestStart = window.endMins - minDuration;
-  for (let t = window.startMins; t <= latestStart; t += 15) {
+  const effectiveStart = minStart !== undefined
+    ? Math.max(window.startMins, Math.ceil(minStart / 15) * 15)
+    : window.startMins;
+  for (let t = effectiveStart; t <= latestStart; t += 15) {
     options.push(t);
   }
   return options;
 }
 
 // Generate duration options given a start time and window end
+// Fixed options: 1 hr, 1 hr 15 min, 1 hr 30 min, 2 hr (capped at 120 min)
 function getDurationOptions(startMins: number, windowEnd: number): number[] {
-  const options: number[] = [];
-  const maxDuration = windowEnd - startMins;
-  for (let d = 60; d <= maxDuration; d += 15) {
-    options.push(d);
-  }
-  return options;
+  const maxDuration = Math.min(windowEnd - startMins, 120);
+  return [60, 75, 90, 120].filter((d) => d <= maxDuration);
+}
+
+function formatDuration(mins: number): string {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (m === 0) return `${h} hr`;
+  return `${h} hr ${m} min`;
 }
 
 // Upsell: extra time at 50% off when window has ≤120 min and user picks 60 min
@@ -816,23 +823,40 @@ export default function Home() {
 
   // Dates that have available private slots (for calendar highlights)
   const calendarHighlightedDates = useMemo(() => {
+    const now = new Date();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const currentMins = now.getHours() * 60 + now.getMinutes();
     const dates = new Set<string>();
     timeWindows.forEach((w) => {
-      if (w.endMins - w.startMins >= 60 && new Date(w.date) >= today) dates.add(w.date);
+      if (w.endMins - w.startMins < 60) return;
+      const d = new Date(w.date);
+      if (d < today) return;
+      if (d.getTime() === today.getTime()) {
+        const nextValidStart = Math.ceil(currentMins / 15) * 15;
+        const effectiveStart = Math.max(w.startMins, nextValidStart);
+        if (w.endMins - effectiveStart < 60) return;
+      }
+      dates.add(w.date);
     });
     return dates;
   }, [timeWindows]);
 
   // Filter time windows by day of week, month, calendar date, and past dates
   const filteredWindows = useMemo(() => {
+    const now = new Date();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const currentMins = now.getHours() * 60 + now.getMinutes();
     return timeWindows.filter((w) => {
       if (w.endMins - w.startMins < 60) return false;
       const d = new Date(w.date);
       if (d < today) return false;
+      if (d.getTime() === today.getTime()) {
+        const nextValidStart = Math.ceil(currentMins / 15) * 15;
+        const effectiveStart = Math.max(w.startMins, nextValidStart);
+        if (w.endMins - effectiveStart < 60) return false;
+      }
       if (calendarSelectedDate && w.date !== calendarSelectedDate) return false;
       if (filterDays.size > 0 && !filterDays.has(d.getUTCDay())) return false;
       if (filterMonth) {
@@ -875,9 +899,10 @@ export default function Home() {
     { value: "7", label: "7th Grade" }, { value: "8", label: "8th Grade" },
     { value: "9", label: "9th Grade" }, { value: "10", label: "10th Grade" },
     { value: "11", label: "11th Grade" }, { value: "12", label: "12th Grade" },
-    { value: "College +", label: "College +" },
+    { value: "College +", label: "College / Pro" },
+    { value: "Adult", label: "Adult" },
   ];
-  const GRADE_ORDER = ["K","1","2","3","4","5","6","7","8","9","10","11","12","College +"];
+  const GRADE_ORDER = ["K","1","2","3","4","5","6","7","8","9","10","11","12","College +","Adult"];
 
   function getGradesForGroup(groupName: string) {
     const match = groupName.match(/Grades?\s+(K|\d+)[–\-](\d+|College\s*\+?)/i);
@@ -903,9 +928,15 @@ export default function Home() {
 
   function isFutureSession(s: WeeklySession): boolean {
     const sessionDate = new Date(s.date);
+    const now = new Date();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return sessionDate >= today;
+    if (sessionDate > today) return true;
+    if (sessionDate < today) return false;
+    // Same day — check if start time is still in the future
+    const sessionStartMins = parseTime(s.startTime);
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+    return sessionStartMins > currentMins;
   }
 
   function isSessionFull(s: WeeklySession): boolean {
@@ -1590,12 +1621,17 @@ export default function Home() {
 
           <div className="mt-6 space-y-4">
             {(showAllPrivate ? filteredWindows : filteredWindows.slice(0, 10)).map((window, wi) => {
+              const now = new Date();
+              const todayLocalStr = now.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+              const isToday = window.date === todayLocalStr;
+              const nowMins = now.getHours() * 60 + now.getMinutes();
+              const startOptions = getStartOptions(window, 60, isToday ? nowMins : undefined);
+              const defaultStart = startOptions.length > 0 ? startOptions[0] : window.startMins;
               const totalAvailable = window.endMins - window.startMins;
               const sel = windowSelections[wi] || {
-                start: window.startMins,
-                duration: Math.min(60, totalAvailable),
+                start: defaultStart,
+                duration: Math.min(60, window.endMins - defaultStart),
               };
-              const startOptions = getStartOptions(window, 60);
               const durationOptions = getDurationOptions(sel.start, window.endMins);
               const endTime = formatTimeFromMins(sel.start + sel.duration);
               const price = getPrivatePrice(sel.duration, 1);
@@ -1649,7 +1685,7 @@ export default function Home() {
                       >
                         {durationOptions.map((d) => (
                           <option key={d} value={d}>
-                            {d} min
+                            {formatDuration(d)}
                           </option>
                         ))}
                       </select>
@@ -2211,7 +2247,8 @@ export default function Home() {
                           <option value="10">10th Grade</option>
                           <option value="11">11th Grade</option>
                           <option value="12">12th Grade</option>
-                          <option value="College +">College +</option>
+                          <option value="College +">College / Pro</option>
+                          <option value="Adult">Adult</option>
                         </select>
                       </div>
                     </div>
