@@ -1307,11 +1307,14 @@ export default function Home() {
                 >
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-mesa-accent">{group.replace("Grade 5 & Below", "Grades K-5")}</h3>
-                    {selectedCount > 0 && (
-                      <span className="rounded-full bg-mesa-accent/20 px-2 py-0.5 text-xs font-semibold text-mesa-accent">
-                        {selectedCount} selected
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-white">$50</span>
+                      {selectedCount > 0 && (
+                        <span className="rounded-full bg-mesa-accent/20 px-2 py-0.5 text-xs font-semibold text-mesa-accent">
+                          {selectedCount} selected
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <p className="mt-1 text-sm text-brown-500">
                     {futureSessions.length} upcoming session{futureSessions.length !== 1 ? "s" : ""}
