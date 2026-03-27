@@ -166,6 +166,7 @@ export default function LandingPage() {
                 title: "Group Training Sessions",
                 tag: "Competitive. Collaborative. Consistent.",
                 desc: "Small group basketball training focused on skill development, game situations, and live competition. Perfect for players who want to improve while being pushed by others.",
+                price: "$50 / session",
                 anchor: "/schedule#schedule",
               },
               {
@@ -191,6 +192,9 @@ export default function LandingPage() {
                   {item.title}
                 </p>
                 <p className="text-sm text-brown-400 leading-relaxed">{item.desc}</p>
+                {"price" in item && (
+                  <p className="mt-4 text-base font-bold text-white">{item.price}</p>
+                )}
                 <p className="mt-5 text-sm font-semibold text-mesa-accent group-hover:text-yellow-400 transition">
                   View &amp; Book &rarr;
                 </p>
